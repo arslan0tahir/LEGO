@@ -1,17 +1,10 @@
 
 var mysql = require('mysql2');
-
+//if "require" is used multiple times in multiple files,
+// it will hold the export of one instance and reuse it. 
 const dbName="LEGOS";
 
-// var connection = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "",
-//   multipleStatements: true// it can increase the scope of SQL injection
-// });
 
-
-// var mysql = require('mysql');
 
 var pool  = mysql.createPool({
     host     : 'localhost',
@@ -34,6 +27,5 @@ const systemTables={
     SiteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
 
 };
-//whenever this module is called the same single connection instance is returned and reused
 module.exports={pool,systemTables,dbName}
 

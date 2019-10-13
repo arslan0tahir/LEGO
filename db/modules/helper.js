@@ -77,29 +77,82 @@ let jsonArrayToInsertQueryString=function(arr,tableName){
  * Convert Nested JSON Array into SQL Insert Query String
  * @param  {Object} obj Nested JSON Object with table column names as keys and values as values
  * @param  {String} tableName Table Name in follwoing format [DataBase].[Table]
- * @return {String} SQL Insert Query String  
+ * @return {Array} Array of queries with child first approach  
  */
-let NestedJsonObjectToInsertQueryString=function(obj,index,query){
-    // SET AUTOCOMMIT = 0
-    // START TRANSACTION;
-    //LOOP
-    //          INSERT child
-    //          Get last insert id
-    //          Insert Parent
-    //END LOOP
-    // COMMIT;
-
-    if (index==0){
-        q="";
+async function nestedJsonObjectTotDb(obj,currObj,index){
+    index=0;
+    let dummyAwait=[56,98,75]
+    let k=0;
+    const promisePool = pool.promise();
+    const connection = await promisePool.getConnection();
+    currObj=obj;
+    async function aliasNestedJsonObjectToInsertDb(obj,currObj,index){
+        //start of recursion
+        let myObj=JSON.parse(JSON.stringify(currObj));
+        let insertId;
+        if(Object.keys(myObj).length === 0){
+            return 0;
+        }
+        if (index==0){
+                       
+            await connection.beginTransaction();
+        }
         index++;
+        //go one step down in the object (if possible)
+        let childObj={};
+        let skip=1;
+        let holdChildIds=[];
+        for(key in myObj){
+            if(typeof myObj[key] === 'object' && myObj[key].constructor === Object){
+                childObj=JSON.parse(JSON.stringify(myObj[key]));
+                //await is used to return a value instead of promise
+                skip=0;
+                //if child found
+                insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index)
+                holdChildIds.push(insertId);
+            }            
+        }
+        if (skip){//if no child found
+            insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index)
+        }
 
-        connection.query("SET AUTOCOMMIT = 0", function (err, result) {
-            if (err) throw err;
-            console.log(`Deleted All users`);
-        })
+
+            //[START] Preparing myObj for Db Insertion
+
+        let fk=[32,33,34,35]
+            //listname and table name are used for same purpose
+        let listAlias=myObj["__ListAlias__"];
+        delete myObj["__ListAlias__"];
+
+        let listId=myObj["__ListId__"];
+        delete myObj["__ListId__"];
+
+        //replacing child objects with insert ids i.e foriegn keys
+        let i=0;
+        for(key in myObj){
+            if(typeof myObj[key] === 'object' && myObj[key].constructor === Object){
+                myObj[key]=fk[i]
+                i++;
+            }
+        }
+        //[END] Preparing myObj for Db Insertion
+        console.log("index ",insertId, myObj)
+
+        //await connection.query(jsonArrayToInsertQueryString([myObj],listAlias));
+
+
+        //Insert to DB with Insert Id
+        //get and return new insert ID
+        //
+        k++
+        return dummyAwait[k];
+
+
+
     }
+    await aliasNestedJsonObjectToInsertDb(obj,currObj,index);   
 
-    let q='';
+        let q='';
     // let obj={};
     // obj=arr[i];
     // q=`${q} INSERT INTO ${tableName} ` 
@@ -138,5 +191,6 @@ let NestedJsonObjectToInsertQueryString=function(obj,index,query){
 
 module.exports={
     jsonArrayToInsertQueryString,
-    qDeleteAllRowsFromSystemTables
+    qDeleteAllRowsFromSystemTables,
+    nestedJsonObjectTotDb
 }

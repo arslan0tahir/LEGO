@@ -10,7 +10,7 @@ let myAdminPassword="admin";
 
 
 
-//create Admin Users
+//JSON to create Admin Users
 let row=[{
   id:'1',
   // createdBy  : '',
@@ -27,8 +27,48 @@ let row=[{
   profile : '{}'
 }];
 
+//JSON to create root site
+let rootSite={
+  __ListAlias__:"SiteRegister",
+  __ListId__:"",
+
+  id:'1',
+  createdBy  : '1',
+  modifiedBy :  '1',
+  inheritRowPermissions : '0',
+  inheritCellPermissions: '1',
+  rowPerm : {
+    __ListAlias__:"Permissions",
+    __ListId__:"",
+    id:'1',
+    createdBy  : '1',
+    modifiedBy :  '1',
+    inheritRowPermissions : '1',
+    inheritCellPermissions: '1',
+
+  },
+  cellPerm : '{}',
+  //**end defaults
+  userName : "admin",
+  email : "arslan.tahir@outlook.com",
+  authenticationType  : "local",
+  passwordHash : bcrypt.hashSync(myAdminPassword, saltRounds),
+  profile : {
+    __ListAlias__:"Profile",
+    __ListId__:"",
+    id:'1',
+    createdBy  : '1',
+    modifiedBy :  '1',
+    inheritRowPermissions : '1',
+    inheritCellPermissions: '1',
+  }
+};
+
+
 let qDeleteSystemData=helper.qDeleteAllRowsFromSystemTables(systemTables);
 let qCreateUsers=helper.jsonArrayToInsertQueryString(row, systemTables["Users"]);
+helper.nestedJsonObjectTotDb(rootSite,rootSite,0)
+
 
 async function main(){
   const promisePool = pool.promise();
@@ -41,6 +81,7 @@ async function main(){
   [row,fields]=await promisePool.query(qCreateUsers)
   console.log("Default Users Created");
 
+  //creating root site
 
   
 }
@@ -72,33 +113,6 @@ console.log("hello")
 
 
 //create Root Site
-let nestedObject={
-  __ListAlias__:"SiteRegister",
-  __ListId__:"",
-
-  id:'1',
-  createdBy  : '1',
-  modifiedBy :  '1',
-  inheritRowPermissions : '0',
-  inheritCellPermissions: '1',
-  rowPerm : {
-    __ListAlias__:"Permissions",
-    __ListId__:"",
-    id:'1',
-    createdBy  : '1',
-    modifiedBy :  '1',
-    inheritRowPermissions : '1',
-    inheritCellPermissions: '1',
-
-  },
-  cellPerm : '{}',
-  //**end defaults
-  userName : "admin",
-  email : "arslan.tahir@outlook.com",
-  authenticationType  : "local",
-  passwordHash : bcrypt.hashSync(myAdminPassword, saltRounds),
-  profile : '{}'
-};
 
 // console.log(systemTables)
 
