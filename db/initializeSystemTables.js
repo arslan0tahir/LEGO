@@ -1,5 +1,14 @@
 var mysql = require('mysql');
+var uuid=require('uuid/v1');
+const bcrypt = require('bcrypt');
+
+//[START initialize info for bcrypt]
+const saltRounds = 10;
+const myAdminPassword = 'admin';
+//[END initialize info for bcrypt]
+
 const dbName="LEGOS";
+
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -128,6 +137,7 @@ con.connect(function(err) {
             updatePerm JSON,
             deletePerm JSON            
           )ENGINE=INNODB`;
+          //FK Contraint on rowPerm is not applied on permissions table (rowPerm Column is not used)
           defaultConstraints("Permissions","")
       
           con.query(query, function (err, result) {
@@ -187,8 +197,19 @@ con.connect(function(err) {
           console.log(constriants.join(";\n"))
           con.query(constriants.join(";"), function (err, result) {
             if (err) throw err;
-            console.log(`Table create : ${systemTables["Groups"]}`);
+            console.log(`All registered constraints applied`);
           });
+
+          
+
+          //  console.log(baseData.join(";\n"))
+          //  con.query(baseData.join(";"), function (err, result) {
+          //    if (err) throw err;
+          //    console.log(`All registered constraints applied`);
+          //  });
+
+
+
            
 
           con.end();
@@ -201,4 +222,7 @@ con.connect(function(err) {
 
  
 
-});
+});//con end
+
+
+
