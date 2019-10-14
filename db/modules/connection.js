@@ -10,6 +10,7 @@ var pool  = mysql.createPool({
     host     : 'localhost',
     user     : 'root',
     password : '',
+    database : 'LEGOS',
     multipleStatements: true,
     connectionLimit : 10,
     // database : 'legos'

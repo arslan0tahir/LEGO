@@ -17,13 +17,22 @@ let qDeleteAllRowsFromSystemTables=function(obj){
     // query+`TRUNCATE TABLE ${systemTables[key]}; \n`
     // query=query+"SET FOREIGN_KEY_CHECKS = 1;\n";
     
-    let query="";
+
+    let query="SET FOREIGN_KEY_CHECKS = 0;\n";
     for (key in systemTables){
-        query=query+`DELETE FROM ${systemTables[key]};
-            ALTER TABLE  ${systemTables[key]} AUTO_INCREMENT = 1;\n`;
+        query=query+`TRUNCATE TABLE ${systemTables[key]}; \n`
+            
     }
-    // console.log(query)
+    query=query+`SET FOREIGN_KEY_CHECKS = 1;`
     return query;    
+
+
+    // let query="";
+    // for (key in systemTables){
+    //     query=query+`DELETE FROM ${systemTables[key]};
+    //         ALTER TABLE  ${systemTables[key]} AUTO_INCREMENT = 1;\n`;
+    // }
+    // return query;    
 }
 
 
@@ -56,7 +65,13 @@ let jsonArrayToInsertQueryString=function(arr,tableName){
           }
       
           col=col+"`"+key+"`"
-          val=val+"'"+obj[key]+"'"    
+
+          if (obj[key]){
+            val=val+"'"+obj[key]+"'"             
+          }
+          else{
+            val=val+"NULL" 
+          }
       
           fKey=0;
         }
@@ -76,51 +91,61 @@ let jsonArrayToInsertQueryString=function(arr,tableName){
 /**
  * Convert Nested JSON Array into SQL Insert Query String
  * @param  {Object} obj Nested JSON Object with table column names as keys and values as values
- * @param  {String} tableName Table Name in follwoing format [DataBase].[Table]
- * @return {Array} Array of queries with child first approach  
+ * @param  {Object} currObj Current Node (it can be any decendent currently being trnslated to db in recurssion stack)
+ * @param  {Number} index Increment against every object that is translated to db 
+ * @return {} void  
  */
 async function nestedJsonObjectTotDb(obj,currObj,index){
     index=0;
-    let dummyAwait=[56,98,75]
-    let k=0;
+
+    //getting connection for transaction
     const promisePool = pool.promise();
     const connection = await promisePool.getConnection();
+    
     currObj=obj;
-    async function aliasNestedJsonObjectToInsertDb(obj,currObj,index){
+    await connection.beginTransaction();
+
+            //this alias function was for testing purpose and may be unified in future versions
+    async function aliasNestedJsonObjectToInsertDb(obj,currObj,index,connection){
         //start of recursion
+
+        //copying currObj by value
         let myObj=JSON.parse(JSON.stringify(currObj));
         let insertId;
+
+        //for JSON object with no child node return 0 and process and translate the stacked nodes to db 
         if(Object.keys(myObj).length === 0){
             return 0;
         }
-        if (index==0){
-                       
-            await connection.beginTransaction();
+
+        //start transaction on start. It will be called once throughout the recurssions 
+        if (index==0){                       
         }
         index++;
+
         //go one step down in the object (if possible)
         let childObj={};
-        let skip=1;
-        let holdChildIds=[];
+        let noChild=1;
+        //fk hold insert ids (foriegn keys) of all sibling nodes and are used as forignkeys for parent node
+        let fk=[];
         for(key in myObj){
-            if(typeof myObj[key] === 'object' && myObj[key].constructor === Object){
+            //if child found, stack the child and try to go one more step down
+            if(typeof myObj[key] === 'object' && ((myObj[key]||'').constructor) === Object){
                 childObj=JSON.parse(JSON.stringify(myObj[key]));
                 //await is used to return a value instead of promise
-                skip=0;
+                noChild=0;
                 //if child found
-                insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index)
-                holdChildIds.push(insertId);
+                insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index,connection)
+                fk.push(insertId);
             }            
         }
-        if (skip){//if no child found
-            insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index)
+        if (noChild){//if no child found
+            insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index,connection)
         }
 
 
-            //[START] Preparing myObj for Db Insertion
-
-        let fk=[32,33,34,35]
-            //listname and table name are used for same purpose
+        //[START] Preparing myObj for Db Insertion
+        //listname and table name are used for same purpose
         let listAlias=myObj["__ListAlias__"];
         delete myObj["__ListAlias__"];
 
@@ -130,27 +155,42 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
         //replacing child objects with insert ids i.e foriegn keys
         let i=0;
         for(key in myObj){
-            if(typeof myObj[key] === 'object' && myObj[key].constructor === Object){
+            //if object is not empty
+            if(typeof myObj[key] === 'object' && (myObj[key]||'').constructor === Object){
                 myObj[key]=fk[i]
                 i++;
             }
         }
         //[END] Preparing myObj for Db Insertion
-        console.log("index ",insertId, myObj)
+        
+        //translating reverse chronologically isolated JSON node to mysql query(i.e. botton to top)
+        let qq=jsonArrayToInsertQueryString([myObj],systemTables[listAlias]);
+        // console.log(qq);
+        try{
+            [row,fields]=await connection.query(qq);
+            console.log(` index: ${index} \n InsertedIn: ${systemTables[listAlias]} \n InsertId: ${row.insertId}
+            `)   
+        }
+        catch(err){
+            await connection.rollback();
+            throw err;
+        }
+        finally{
+            await connection.release();
+        }
 
-        //await connection.query(jsonArrayToInsertQueryString([myObj],listAlias));
+       
 
 
-        //Insert to DB with Insert Id
-        //get and return new insert ID
-        //
-        k++
-        return dummyAwait[k];
-
-
-
+        //return last insert id (to be used as fk in parent node)
+        return row.insertId;
     }
-    await aliasNestedJsonObjectToInsertDb(obj,currObj,index);   
+    
+    await aliasNestedJsonObjectToInsertDb(obj,currObj,index,connection);   
+    await connection.commit();
+        
+    
+ 
 
         let q='';
     // let obj={};

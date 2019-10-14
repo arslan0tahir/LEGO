@@ -36,38 +36,28 @@ let rootSite={
   createdBy  : '1',
   modifiedBy :  '1',
   inheritRowPermissions : '0',
-  inheritCellPermissions: '1',
+  inheritCellPermissions: '0',
   rowPerm : {
     __ListAlias__:"Permissions",
     __ListId__:"",
     id:'1',
     createdBy  : '1',
     modifiedBy :  '1',
-    inheritRowPermissions : '1',
-    inheritCellPermissions: '1',
+    inheritRowPermissions : '0',
+    inheritCellPermissions: '0',
 
   },
   cellPerm : '{}',
   //**end defaults
-  userName : "admin",
-  email : "arslan.tahir@outlook.com",
-  authenticationType  : "local",
-  passwordHash : bcrypt.hashSync(myAdminPassword, saltRounds),
-  profile : {
-    __ListAlias__:"Profile",
-    __ListId__:"",
-    id:'1',
-    createdBy  : '1',
-    modifiedBy :  '1',
-    inheritRowPermissions : '1',
-    inheritCellPermissions: '1',
-  }
+  siteName: "root",
+  parentSite: null
+  
+  
 };
 
 
 let qDeleteSystemData=helper.qDeleteAllRowsFromSystemTables(systemTables);
 let qCreateUsers=helper.jsonArrayToInsertQueryString(row, systemTables["Users"]);
-helper.nestedJsonObjectTotDb(rootSite,rootSite,0)
 
 
 async function main(){
@@ -82,6 +72,9 @@ async function main(){
   console.log("Default Users Created");
 
   //creating root site
+  console.log("Creating Root Site");
+  await helper.nestedJsonObjectTotDb(rootSite,rootSite,0)
+  console.log("Root Site Created");
 
   
 }
