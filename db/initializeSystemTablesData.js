@@ -12,13 +12,13 @@ let myAdminPassword="admin";
 
 //JSON to create Admin Users
 let row=[{
-  id:'1',
-  // createdBy  : '',
-  // modifiedBy :  '',
+  id:'1',//1 is reserved for admin
+  createdBy  : null,//null for createdby is only used for admin user 
+  modifiedBy : null,//null for modifiedby is only used for admin user 
   inheritRowPermissions : '1',
   inheritCellPermissions: '1',
-  // rowPerm : '',
-  cellPerm : '{}',
+  rowPerm : null,
+  cellPerm : null,
   //**end defaults
   userName : "admin",
   email : "arslan.tahir@outlook.com",
@@ -26,6 +26,36 @@ let row=[{
   passwordHash : bcrypt.hashSync(myAdminPassword, saltRounds),
   profile : '{}'
 }];
+
+//Create Admin Group
+let groups=[{
+  id:'1',
+  createdBy  : '1',
+  modifiedBy :  '1',
+  inheritRowPermissions : '1',//as inheritance is enabled so no unique permissions required
+  inheritCellPermissions: '1',
+  rowPerm : null,//no unoque permissions
+  cellPerm : null,//no unique permissions
+  //**end defaults
+  groupName : "admins",
+  email : "arslan.tahir@outlook.com",
+  profile : '{}'
+}];
+
+//Create Group Membership
+let groupsMemberShip=[{
+  id:'1',
+  createdBy  : '1',
+  modifiedBy :  '1',
+  inheritRowPermissions : '1',//as inheritance is enabled so no unique permissions required
+  inheritCellPermissions: '1',
+  rowPerm : null,//no unoque permissions
+  cellPerm : null,//no unique permissions
+  //**end defaults
+  groupId : '1',
+  userId : '1'
+}];
+
 
 //JSON to create root site
 let rootSite={
@@ -36,18 +66,21 @@ let rootSite={
   createdBy  : '1',
   modifiedBy :  '1',
   inheritRowPermissions : '0',
-  inheritCellPermissions: '0',
+  inheritCellPermissions: '1',
   rowPerm : {
     __ListAlias__:"Permissions",
     __ListId__:"",
     id:'1',
     createdBy  : '1',
     modifiedBy :  '1',
-    inheritRowPermissions : '0',
-    inheritCellPermissions: '0',
-
+    fullControl: `{ "u":[1], "g":[1] }`,
+    createItem :`{ "u":[1], "g":[1] }`,
+    readItem :`{ "u":[1], "g":[1] }`,
+    updateItem: `{ "u":[1], "g":[1] }`,
+    deleteItem :`{ "u":[1], "g":[1] }`,
+    chnagePermissions:`{ "u":[1], "g":[1] }`    
   },
-  cellPerm : '{}',
+  cellPerm : null,
   //**end defaults
   siteName: "root",
   parentSite: null
@@ -56,8 +89,12 @@ let rootSite={
 };
 
 
+
 let qDeleteSystemData=helper.qDeleteAllRowsFromSystemTables(systemTables);
 let qCreateUsers=helper.jsonArrayToInsertQueryString(row, systemTables["Users"]);
+let qCreateGroups=helper.jsonArrayToInsertQueryString(groups, systemTables["Groups"]);
+let qGroupMembership=helper.jsonArrayToInsertQueryString(groupsMemberShip, systemTables["GroupMembership"]);
+
 
 
 async function main(){
@@ -76,6 +113,14 @@ async function main(){
   await helper.nestedJsonObjectTotDb(rootSite,rootSite,0)
   console.log("Root Site Created");
 
+  //creating groups
+  [row,fields]=await promisePool.query(qCreateGroups)
+  console.log("Default Groups Created");
+
+  //creating group membership
+  [row,fields]=await promisePool.query(qGroupMembership)
+  console.log("Default GroupMembership Created");
+  
   
 }
 

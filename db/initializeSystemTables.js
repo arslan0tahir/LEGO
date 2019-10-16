@@ -47,13 +47,13 @@ const defaultColumns=`
 const defaultConstraints=function(tableName,qty){
       
       if(qty=="all"){
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables[tableName]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables[tableName]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES ${systemTables[tableName]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables["Users"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables["Users"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES ${systemTables["Permissions"]}(id)`)
       }
       else {
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables[tableName]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables[tableName]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables["Users"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables["Users"]}(id)`)
        
       }
 }
@@ -132,10 +132,12 @@ con.connect(function(err) {
            /*-----------------Create Permissions table:*/
            query=`CREATE TABLE IF NOT EXISTS ${systemTables["Permissions"]}(
             ${defaultColumns}  
-            createPerm JSON,
-            readPerm JSON,
-            updatePerm JSON,
-            deletePerm JSON            
+            fullControl JSON,
+            createItem JSON,
+            readItem JSON,
+            updateItem JSON,
+            deleteItem JSON,
+            changePermissions JSON            
           )ENGINE=INNODB`;
           //FK Contraint on rowPerm is not applied on permissions table (rowPerm Column is not used)
           defaultConstraints("Permissions","")

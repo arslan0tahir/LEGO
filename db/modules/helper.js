@@ -165,7 +165,7 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
         
         //translating reverse chronologically isolated JSON node to mysql query(i.e. botton to top)
         let qq=jsonArrayToInsertQueryString([myObj],systemTables[listAlias]);
-        // console.log(qq);
+        console.log(qq);
         try{
             [row,fields]=await connection.query(qq);
             console.log(` index: ${index} \n InsertedIn: ${systemTables[listAlias]} \n InsertId: ${row.insertId}
