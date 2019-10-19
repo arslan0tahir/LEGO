@@ -28,5 +28,17 @@ const systemTables={
     SiteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
 
 };
-module.exports={pool,systemTables,dbName}
+
+const systemTableMappedNames={
+    Users: "users",
+    Groups: `groups`,
+    GroupMembership: `group_membership`,
+    Permissions: `permissions`,
+    SiteRegister: `site_register`,
+    SiteListRegister: `site_list_register`,
+    SiteListColumnRegister: `site_list_column_register`,
+
+};
+
+module.exports={pool,systemTables,systemTableMappedNames,dbName}
 

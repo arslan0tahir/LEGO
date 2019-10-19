@@ -4,7 +4,7 @@
  */
 
 
-let {pool,systemTables}=require("./connection");
+let {pool,systemTables,systemTableMappedNames}=require("./connection");
 
 
 /**
@@ -128,7 +128,10 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
         let noChild=1;
         //fk hold insert ids (foriegn keys) of all sibling nodes and are used as forignkeys for parent node
         let fk=[];
-        for(key in myObj){
+        //hold Array array will hold all the arrays in current node and insert them in db in one to many format
+        let holdArrays={};
+
+        for(var key in myObj){
             //if child found, stack the child and try to go one more step down
             if(typeof myObj[key] === 'object' && ((myObj[key]||'').constructor) === Object){
                 childObj=JSON.parse(JSON.stringify(myObj[key]));
@@ -137,10 +140,18 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
                 //if child found
                 insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index,connection)
                 fk.push(insertId);
-            }            
+            }
+
+            if( Array.isArray(myObj[key])){
+                //of array then hold the array and insert it after insertion of parent node.
+                holdArrays[key]=[...myObj[key]];
+                delete myObj[key];
+                noChild=0;
+            }
+            
         }
         if (noChild){//if no child found
-            insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index,connection)
+            insertId=await aliasNestedJsonObjectToInsertDb(obj,childObj,index,connection);
         }
 
 
@@ -154,7 +165,7 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
 
         //replacing child objects with insert ids i.e foriegn keys
         let i=0;
-        for(key in myObj){
+        for(var key in myObj){
             //if object is not empty
             if(typeof myObj[key] === 'object' && (myObj[key]||'').constructor === Object){
                 myObj[key]=fk[i]
@@ -165,11 +176,51 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
         
         //translating reverse chronologically isolated JSON node to mysql query(i.e. botton to top)
         let qq=jsonArrayToInsertQueryString([myObj],systemTables[listAlias]);
-        console.log(qq);
+        // console.log(qq);
         try{
-            [row,fields]=await connection.query(qq);
+            let [row,fields]=await connection.query(qq);
             console.log(` index: ${index} \n InsertedIn: ${systemTables[listAlias]} \n InsertId: ${row.insertId}
             `)   
+
+            //after insertion of all child nodes of particular node in a tree, array can be handeled here
+            //array nodes are of many to one type and seperate transaction with seperate connection from pool can be used
+            // loop in array and     await nestedJsonObjectTotDb(obj,currObj,index) for each index. if different connection is required
+            //OR loop in array and     await aliasNestedJsonObjectTotDb(obj,currObj,index) for each index. if same connection is required.
+            
+            // let copyholdArrays=JSON.parse(JSON.stringify(holdArrays));//deep copy of hold arrays
+            for(key in holdArrays){
+                let qqq=`select COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_COLUMN_NAME, REFERENCED_TABLE_NAME
+                        from information_schema.KEY_COLUMN_USAGE
+                        where TABLE_SCHEMA= 'legos'
+                        AND TABLE_NAME = '${systemTableMappedNames[key]}'
+                        
+                        
+                        ` ;
+                //rowIn row returned by query in inner loop        
+                let [rowIn,fields]=await connection.query(qqq);
+                
+                //goldenkey holds the name of foreignkey in "MANY" table going to be pointed to "ONE" table
+                let goldenKey="";
+                for (var ii=0;ii<rowIn.length;ii++){
+                    if (rowIn[ii]["REFERENCED_TABLE_NAME"]==systemTableMappedNames[listAlias]){
+                        goldenKey=rowIn[ii]["COLUMN_NAME"]
+                    }
+                }
+                
+                //array of object of same table,all pointing to one item i.e. listAlias(parent node)
+                let arr=holdArrays[key];
+                for (var ii=0;ii<arr.length;ii++){//mapping all object of "MANY" to db after updaing necessary information
+                    arr[ii][goldenKey]=String(row.insertId);
+                    arr[ii]["__ListAlias__"]=key;
+                    arr[ii]["__ListId__"]="";
+                    await aliasNestedJsonObjectToInsertDb(arr[ii],arr[ii],0,connection);  
+                }
+
+            }
+            
+            //return last insert id (to be used as fk in parent node)
+            return row.insertId;
+
         }
         catch(err){
             await connection.rollback();
@@ -182,8 +233,6 @@ async function nestedJsonObjectTotDb(obj,currObj,index){
        
 
 
-        //return last insert id (to be used as fk in parent node)
-        return row.insertId;
     }
     
     await aliasNestedJsonObjectToInsertDb(obj,currObj,index,connection);   

@@ -88,18 +88,73 @@ let rootSite={
   
 };
 
+//JSON to create first list
+let myFIrstList={
+  __ListAlias__:"SiteListRegister",
+  __ListId__:"",
 
+  id:'1',
+  createdBy  : '1',
+  modifiedBy :  '1',
+  inheritRowPermissions : '1',
+  inheritCellPermissions: '1',
+  cellPerm : null,
+  //**end defaults
+  listName: "Complaints",
+  parentSite:"1",
+  SiteListColumnRegister: [
+
+            {columnName : "Title",
+            DataType : "textbox",
+            rowPerm : {
+                __ListAlias__:"Permissions",
+                __ListId__:"",
+                id:'100',
+                createdBy  : '1',
+                modifiedBy :  '1',
+                fullControl: `{ }`,
+                createItem :`{ "u":[1], "g":[1] }`,
+                readItem :`{ }`,
+                updateItem: `{ "u":[1], "g":[1] }`,
+                deleteItem :`{  }`,
+                chnagePermissions:`{ "u":[1], "g":[1] }`    
+              }
+            }, 
+
+            {columnName : "Compaint Type",
+            DataType : "dropdown",
+            rowPerm : {
+                __ListAlias__:"Permissions",
+                __ListId__:"",
+                id:'101',
+                createdBy  : '1',
+                modifiedBy :  '1',
+                fullControl: `{ }`,
+                createItem :`{ }`,
+                readItem :`{ }`,
+                updateItem: `{  }`,
+                deleteItem :`{  }`,
+                chnagePermissions:`{ "u":[1], "g":[1] }`    
+              }
+            }
+        ]
+  
+  
+};
 
 let qDeleteSystemData=helper.qDeleteAllRowsFromSystemTables(systemTables);
 let qCreateUsers=helper.jsonArrayToInsertQueryString(row, systemTables["Users"]);
 let qCreateGroups=helper.jsonArrayToInsertQueryString(groups, systemTables["Groups"]);
 let qGroupMembership=helper.jsonArrayToInsertQueryString(groupsMemberShip, systemTables["GroupMembership"]);
+// let qList=helper.jsonArrayToInsertQueryString(myFIrstList, systemTables["SiteListColumnRegister"]);
 
 
 
 async function main(){
   const promisePool = pool.promise();
+ 
   
+/*  
   //deleting data from system tables
   [row,fields]=await promisePool.query(qDeleteSystemData)
   console.log("Data from systems table deleted");
@@ -120,6 +175,10 @@ async function main(){
   //creating group membership
   [row,fields]=await promisePool.query(qGroupMembership)
   console.log("Default GroupMembership Created");
+*/
+    //creating first list
+    await helper.nestedJsonObjectTotDb(myFIrstList,myFIrstList,0)
+    console.log("First Site list created Created");
   
   
 }
