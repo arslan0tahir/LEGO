@@ -93,7 +93,7 @@ let myFIrstList={
   __ListAlias__:"SiteListRegister",
   __ListId__:"",
 
-  id:'1',
+  id:'20',
   createdBy  : '1',
   modifiedBy :  '1',
   inheritRowPermissions : '1',
@@ -154,7 +154,7 @@ async function main(){
   const promisePool = pool.promise();
  
   
-/*  
+  
   //deleting data from system tables
   [row,fields]=await promisePool.query(qDeleteSystemData)
   console.log("Data from systems table deleted");
@@ -175,10 +175,10 @@ async function main(){
   //creating group membership
   [row,fields]=await promisePool.query(qGroupMembership)
   console.log("Default GroupMembership Created");
-*/
-    //creating first list
-    await helper.nestedJsonObjectTotDb(myFIrstList,myFIrstList,0)
-    console.log("First Site list created Created");
+
+    // //creating first list
+    // await helper.nestedJsonObjectTotDb(myFIrstList,myFIrstList,0)
+    // console.log("First Site list created Created");
   
   
 }

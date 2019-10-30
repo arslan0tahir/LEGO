@@ -1,31 +1,28 @@
 const express = require('express')
-var mySystem = require('./routes/system/system')
+var siteLists = require('./routes/system/siteLists/siteLists')
+var bodyParser     =        require("body-parser");
+
 const app = express()
 const port = 3000
 
 // app.get('/', (req, res) => res.send('Hello World!'))
-app.use(function(req,res,next){
-    
-    let r="";
-    r=req.url;
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
-    let siteChain=req.url.split("/");
 
-    if (siteChain[0]=="siteId"){
-        req.sitesChain="";
-        req.currSiteId=siteChain[0];
-    }
-    else{
-        req.sitesChain=siteChain;
-        req.currSiteId=0;
-    }
 
-    
-    console.log(r)
-    
-    next();
-})
-app.use('/pakistan/islamabad/marketing/', mySystem)
+//endpoint to CRUD on lists metadata of perticular site
+// app.use('/:siteId/system/sitelists/:ListId', siteLists)
+
+app.use(/.*System\/SiteLists/i,siteLists)
+
+
+// function(req,res,next){
+//     app.use(siteLists);
+//     res.send("regex matched");
+// }
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
