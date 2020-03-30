@@ -14,9 +14,11 @@ let __defaults=[
     {
         columnName: 'id', 
         formDataType:'id', //text,text box,id ,drop down,number,datetime ,lookup, file, picture, cluster
-        dbDataType: 'VARCHAR(255)',//can be selected automatically based upon form datatype
+        dbDataType: 'auto',//can be selected automatically based upon form datatype
             //auto
-            //text its VARCHAR(0-65536)
+            //text is VARCHAR(0-65536)
+            //password is VARCHAR(255)
+            //dropDown VARCHAR(0-65536)
             //textBox VARCHAR(0-65533)
             //number VARCHAR(0-255)
             //cluster JSON
@@ -26,6 +28,11 @@ let __defaults=[
             //
 
         dbConstraints: ['AUTO_INCREMENT','PRIMARY KEY'],//NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT
+        extraConfigs:{
+            //foriegnKeys
+            //options--for dropdown datatypes
+            //much more 
+        },
         validation: {
             string:'',//number,object,string ......i.e all joi base params
             min:3,
@@ -39,8 +46,9 @@ let __defaults=[
     {
         columnName: 'created', 
         formDataType:'datetime',
-        dbDataType: 'TIMESTAMP',
+        dbDataType: 'auto',
         dbConstraints: ['DEFAULT CURRENT_TIMESTAMP'],
+        extraConfigs:{},
         validation: {            
         }
     },    
@@ -48,8 +56,9 @@ let __defaults=[
     {
         columnName: 'modified', 
         formDataType:'datetime',
-        dbDataType: 'TIMESTAMP',
+        dbDataType: 'auto',
         dbConstraints: ['DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
+        extraConfigs:{},
         validation: {            
         }
     },
@@ -58,10 +67,14 @@ let __defaults=[
         columnName: 'createdBy', 
         formDataType:'lookup',
         dbDataType: 'auto',
-        foreignKey:{
-            refrences: "Users",
-            refrencedColumn: "id"
+        dbConstraints:[],
+        extraConfigs:{
+            foreignKey:{
+                refrences: "users",
+                refrencedColumn: "id"
+            },
         },
+        
         //dbConstraints: [`FOREIGN KEY (createdBy) REFERENCES ${systemTables["Users"]}(id)`],
         validation:{            
         }
@@ -71,10 +84,13 @@ let __defaults=[
         columnName: 'modifiedBy',
         formDataType:'lookup',
         dbDataType: 'auto',
-        foreignKey:{
-            refrences: "Users",
-            refrencedColumn: "id"
-        },
+        dbConstraints:[],
+        extraConfigs:{
+            foreignKey:{
+                refrences: "users",
+                refrencedColumn: "id"
+            },
+        },        
         dbConstraints: [''],
         validation: {            
         }
@@ -84,7 +100,8 @@ let __defaults=[
         columnName: 'inheritRowPermissions',
         formDataType:'bool',
         dbDataType: 'auto',
-        dbConstraints: [''],
+        dbConstraints: [],
+        extraConfigs:{},
         validation: {            
         }
     },
@@ -93,7 +110,8 @@ let __defaults=[
         columnName: 'inheritCellPermissions',
         formDataType:'bool',
         dbDataType: 'auto',
-        dbConstraints: [''],
+        dbConstraints: [],
+        extraConfigs:{},
         validation: {            
         }
     },
@@ -102,11 +120,13 @@ let __defaults=[
         columnName: 'rowPerm',
         formDataType:'lookup',
         dbDataType: 'auto',
-        foreignKey:{
-            refrences: "Permissions",
-            refrencedColumn: "id",            
-        },
-        dbConstraints: [''],
+        extraConfigs:{
+            foreignKey:{
+                refrences: "permissions",
+                refrencedColumn: "id",            
+            },
+        },        
+        dbConstraints: [],
         validation: {            
         }
     },
@@ -115,7 +135,8 @@ let __defaults=[
         columnName: 'cellPerm',
         formDataType:'cluster',
         dbDataType: 'auto',
-        dbConstraints: [''],
+        dbConstraints: [],
+        extraConfigs:{},
         validation: {            
         }
     },
@@ -123,3 +144,4 @@ let __defaults=[
      
 ]
 
+module.exports=__defaults;

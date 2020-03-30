@@ -40,5 +40,27 @@ const systemTableMappedNames={
 
 };
 
-module.exports={pool,systemTables,systemTableMappedNames,dbName}
+const _systemTables={
+    users: `\`${dbName}\`.\`users\``,
+    groups: `\`${dbName}\`.\`groups\``,
+    groupMembership: `\`${dbName}\`.\`group_membership\``,
+    permissions: `\`${dbName}\`.\`permissions\``,
+    siteRegister: `\`${dbName}\`.\`site_register\``,
+    siteListRegister: `\`${dbName}\`.\`site_list_register\``,
+    siteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
+
+};
+
+const _systemTableMappedNames={
+    users: "users",
+    groups: `groups`,
+    groupMembership: `group_membership`,
+    permissions: `permissions`,
+    siteRegister: `site_register`,
+    siteListRegister: `site_list_register`,
+    siteListColumnRegister: `site_list_column_register`,
+
+};
+
+module.exports={pool,systemTables,systemTableMappedNames,dbName,_systemTableMappedNames,_systemTables}
 

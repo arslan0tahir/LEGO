@@ -1,0 +1,134 @@
+CREATE TABLE IF NOT EXISTS `LEGOS`.`users`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+userName VARCHAR(65536) ,
+email VARCHAR(65536) ,
+authenticationType VARCHAR(255) ,
+passwordHash VARCHAR(255) ,
+profile JSON 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`groups`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+grouName VARCHAR(65536) ,
+email VARCHAR(65536) ,
+profile JSON 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`group_membership`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+groupId BIGINT ,
+userId BIGINT 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`permissions`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+fullControl JSON ,
+createItem JSON ,
+readItem JSON ,
+updateItem JSON ,
+deleteItem JSON ,
+changePermissions JSON 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`site_register`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+siteName VARCHAR(65536) ,
+parentSite BIGINT 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`site_list_register`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+listName VARCHAR(65536) ,
+parentSite BIGINT 
+)ENGINE=INNODB
+
+CREATE TABLE IF NOT EXISTS `LEGOS`.`site_list_column_register`(
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+createdBy BIGINT ,
+modifiedBy BIGINT ,
+inheritRowPermissions TINYINT(1) ,
+inheritCellPermissions TINYINT(1) ,
+rowPerm BIGINT ,
+cellPerm JSON ,
+columnName VARCHAR(65536) ,
+DataType VARCHAR(255) ,
+parentList BIGINT 
+)ENGINE=INNODB
+
+
+
+ALTER TABLE `LEGOS`.`users` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`users` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`users` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`groups` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`groups` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`groups` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`group_membership` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`group_membership` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`group_membership` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`group_membership` ADD CONSTRAINT FOREIGN KEY (groupId) REFERENCES `LEGOS`.`groups`(id)
+ALTER TABLE `LEGOS`.`group_membership` ADD CONSTRAINT FOREIGN KEY (userId) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`permissions` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`permissions` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_register` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_register` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_register` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`site_register` ADD CONSTRAINT FOREIGN KEY (parentSite) REFERENCES `LEGOS`.`site_register`(id)
+ALTER TABLE `LEGOS`.`site_list_register` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_list_register` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_list_register` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`site_list_register` ADD CONSTRAINT FOREIGN KEY (parentSite) REFERENCES `LEGOS`.`site_register`(id)
+ALTER TABLE `LEGOS`.`site_list_column_register` ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_list_column_register` ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES `LEGOS`.`users`(id)
+ALTER TABLE `LEGOS`.`site_list_column_register` ADD CONSTRAINT FOREIGN KEY (rowPerm) REFERENCES `LEGOS`.`permissions`(id)
+ALTER TABLE `LEGOS`.`site_list_column_register` ADD CONSTRAINT FOREIGN KEY (parentList) REFERENCES `LEGOS`.`site_list_register`(id)
