@@ -1,26 +1,27 @@
 {
-  "name": "LEGOS",
+  "name": "lego",
   "version": "1.0.0",
-  "description": "",
-  "main": "buildSystemDataBase.js",
+  "description": "Lego Server is powerful CRUD engine powered by REST API (Node.js) which enable web-developers to get rid of repetitive programming tasks and activiteis.",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@hapi/joi": "^16.1.7",
-    "bcrypt": "^3.0.6",
-    "body-parser": "^1.19.0",
-    "circular-json": "^0.5.9",
-    "express": "^4.17.1",
-    "joi": "^14.3.1",
-    "mysql": "^2.17.1",
-    "mysql2": "^1.7.0",
-    "uuid": "^3.3.3"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arslan0tahir/LEGO.git"
   },
-  "devDependencies": {
-    "jsdoc": "^3.6.3"
+  "author": "Arslan Tahir",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arslan0tahir/LEGO/issues"
+  },
+  "homepage": "https://github.com/arslan0tahir/LEGO#readme",
+  "dependencies": {
+    "circular-json": "^0.5.9",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "ldap-authentication": "^2.3.1",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.19"
   }
 }
