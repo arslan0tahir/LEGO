@@ -11,8 +11,8 @@ module.exports = {
         // userSearchBase: 'dc=red,dc=local',
         usernameAttribute: 'sAMAccountName',
         
-        userPassword: '0123456789',
-        username: '57432',
+        userPassword: '',
+        username: '',
         // starttls: false
       
   };
