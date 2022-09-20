@@ -17,9 +17,11 @@
   },
   "homepage": "https://github.com/arslan0tahir/LEGO#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "circular-json": "^0.5.9",
     "cors": "^2.8.5",
     "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
     "ldap-authentication": "^2.3.1",
     "mysql2": "^2.3.3",
     "nodemon": "^2.0.20",

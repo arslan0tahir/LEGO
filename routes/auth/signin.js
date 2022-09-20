@@ -1,10 +1,10 @@
 const _=require('underscore');
-
+const jwt = require('jsonwebtoken');
 var express = require('express');
 var expressApp=require('../../libraries/expressApp.js')
 var signinLdapCtrl=require('../../controllers/auth/signinLdap')
 var router = express.Router({mergeParams: true})
-
+const jwtConfig=require('../../configs/jwt')
 
 app=expressApp.app;
 app.use(function(req, res, next) {
@@ -17,38 +17,126 @@ app.use(function(req, res, next) {
 
 
 router.post('/',async function (req, res) {
+    let progressStack=[];
+
     // console.log(req);
-    let authResult
+    let authResult={};
+    //# authResult hold the response of authentication method 
 
-    try {   
-        authResult=await signinLdapCtrl.ldapAuthenticate(req.body.userName, req.body.password);
-    } catch (error) {        
-        console.log(error)
-        res.status(500).send(error)
-    }
+    let authSuccess=0;
+    //# 0 for failure 
+    //# 1 for ldap
+    //# 2 for cache and local
+    //# 3 for any other 
 
-    if (_.has(authResult,'userPrincipalName')){
-        //go for jwt tocken generation
-        authResponse={
-            username: "TEST",
-            IsAdmin: 0,
-            jwtTocken:"sdasdsadsadasd",
-            groups:[0],
+    let authPreferred=1;
+    //# 1 for ldap
+    //# 2 for cache and local
+    //# 3 for any other 
+    
+    let jwtToken="";
+    //# holds jwt tocken 
+
+    const jwtSecretKey=jwtConfig.key;
+    //# holds secret key
+    
+    
+    //!!! check if already logged in
+
+    //!!! check if tocken is invalid to impemented in middleware
+
+
+
+    //### ldap authentication
+    if (authPreferred==1 || authSuccess==0){
+        progressStack.push("Trying: ldap authetication")
+        try {   
+            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.userName, req.body.password);
+        } catch (error) {        
+            progressStack.push("Error: ldap authetication")
+            res.status(500).send(progressStack)
         }
 
-        res.send(authResponse);
-    }
-    else if (_.has(authResult,'lde_message')){
-        //go for cahce authentication from db
-        //if successful go for jwt authentication
-        res.status(500).send("Authentication Failure")
-    }
-    else{
-        res.status(500).send("Authentication Failure")
+        //validate authentication result
+        if (_.has(authResult,'sAMAccountName')){
+            if (authResult.sAMAccountName==req.body.userName){
+                authSuccess=1;
+                progressStack.push("Success: ldap authetication")
+                
+            }        
+        }
+        else{
+            progressStack.push("Error: ldap authetication result recieved, but mismatch found")
+        }
     }
 
-    // res.status(500).send(error);
+
+    //### ldap cache or local user authentication
+    else if (authPreferred==2 || authSuccess==0){
+        progressStack.push("Trying: local/cache authetication")            
+        try { 
+            //!!! Method to be defined here
+        } catch (error) {     
+            progressStack.push("Error: local/cache authetication")    
+            console.log(error)
+            res.status(500).send(progressStack)
+        } 
+        
+        //!!! validate authenitcation results and decare success
+
+        // if (_.has(authResult,'sAMAccountName')){
+        //     if (authResult.sAMAccountName==req.body.userName){
+        //         authSuccess=1;
+        //         progressStack.push("Success: ldap authetication")
+                
+        //     }        
+        // }
+        // else{
+        //     progressStack.push("Error: ldap authetication result recieved, but mismatch found")
+        // }
+    }
     
+
+
+
+
+    //!!! get results from db and verify if its admin
+    
+    
+    //### generating response based upon authentication type    
+    
+    //### if authentication successful, setting jwt webtocken in header
+    if (authSuccess>0){
+        data={
+            userName: req.body.userName,
+            time: Date()
+        }
+        jwtToken = jwt.sign(data, jwtSecretKey);        
+        res.setHeader('Authorization', 'Bearer ' + jwtToken)
+        
+
+    }
+
+
+    //# response for ldap authentication
+    if (authSuccess==0){
+        progressStack.push("Error: All athentication method failed");
+        res.status(500).send(progressStack); 
+    }
+    else if (authSuccess==1){
+        authResponse={
+            loggedIn: 1,
+            username: req.body.userName,
+            fullName: authResult.displayName,
+            IsAdmin: 0,
+            jwtTocken:"",
+            groups: [0],
+            // renderApps:[]
+        }
+        res.send(authResponse);
+    }
+
+    // res.status(500).send(progressStack);    
 
 })
 
