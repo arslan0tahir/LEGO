@@ -1,10 +1,18 @@
 const _=require('underscore');
-const jwt = require('jsonwebtoken');
 var express = require('express');
 var expressApp=require('../../libraries/expressApp.js')
-var signinLdapCtrl=require('../../controllers/auth/signinLdap')
 var router = express.Router({mergeParams: true})
-const jwtConfig=require('../../configs/jwt')
+const Cookies=require('js-cookie');
+
+const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
+const signinLdapCtrl=require('../../controllers/auth/signinLdap')
+
+
+
+
+
+        
+
 
 app=expressApp.app;
 app.use(function(req, res, next) {
@@ -37,8 +45,12 @@ router.post('/',async function (req, res) {
     let jwtToken="";
     //# holds jwt tocken 
 
-    const jwtSecretKey=jwtConfig.key;
-    //# holds secret key
+    let tokenData={};
+    let verifiedTokenData={};
+    let authResponse={};
+
+    // const jwtSecretKey=jwtConfig.key;
+    // //# holds secret key
     
     
     //!!! check if already logged in
@@ -107,12 +119,24 @@ router.post('/',async function (req, res) {
     
     //### if authentication successful, setting jwt webtocken in header
     if (authSuccess>0){
-        data={
+        tokenData={
             userName: req.body.userName,
             time: Date()
         }
-        jwtToken = jwt.sign(data, jwtSecretKey);        
-        res.setHeader('Authorization', 'Bearer ' + jwtToken)
+        jwtToken = jwtLibCtrl.generateTocken(tokenData);
+        verifiedTokenData=jwtLibCtrl.verifyTocken(jwtToken)
+        
+        //### verifying coded and decoded token 
+        if (tokenData.userName==verifiedTokenData.userName && typeof(jwtToken)!=undefined){
+            res.setHeader('Authorization', 'Bearer ' + jwtToken);
+            res.cookie(`jwtToken`,jwtToken); //setting cookie
+        }
+        else{
+            progressStack.push("Error: tocken generation failed")    
+            res.status(500).send(progressStack)
+        }
+
+        
         
 
     }
@@ -125,7 +149,7 @@ router.post('/',async function (req, res) {
     }
     else if (authSuccess==1){
         authResponse={
-            loggedIn: 1,
+            loggedIn: 1, //if a valid jwt is generated
             username: req.body.userName,
             fullName: authResult.displayName,
             IsAdmin: 0,

@@ -3,6 +3,7 @@ const expressApp=require('./libraries/expressApp')
 var siteLists = require('./routes/system/siteLists/siteLists')
 var auth_signin= require('./routes/auth/signin')
 var auth_signup= require('./routes/auth/signup')
+var auth_signout= require('./routes/auth/signout')
 const cors = require('cors');
 
 var bodyParser     =        require("body-parser");
@@ -31,6 +32,8 @@ app.use(function(req, res, next) {
 
 app.use('/_api/auth/signin',auth_signin);
 app.use('/_api/auth/signup',auth_signup);
+app.use('/_api/auth/signout',auth_signout);
+
 
 
 
