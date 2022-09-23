@@ -7,6 +7,7 @@ var authenticateMW= require('./middleware/authenticateMW')
 var auth_signin= require('./routes/auth/signin')
 var auth_signup= require('./routes/auth/signup')
 var auth_signout= require('./routes/auth/signout')
+var auth_reinstate= require('./routes/auth/reinstate')
 const cors = require('cors');
 
 var bodyParser     =        require("body-parser");
@@ -38,8 +39,9 @@ app.use(authenticateMW);
 app.use('/_api/auth/signin',auth_signin);
 app.use('/_api/auth/signup',auth_signup);
 app.use('/_api/auth/signout',auth_signout);
+app.use('/_api/auth/reinstate',auth_reinstate);
 
-
+//!!! if not route found 
 
 
 

@@ -2,6 +2,8 @@ const _=require('underscore');
 const jwtLibCtrl = require('../controllers/libraryControllers/jwtLibCtrl')
 
 const authenticateMW=function (req, res, next){
+    //### if its a fresh login req will contain username and password in auth
+
     let bearerToken={};
     let jwtToken='';
     let verifiedToken='';
@@ -14,19 +16,21 @@ const authenticateMW=function (req, res, next){
     }
     catch(e){
         res.locals.isAuthenticated=0;
-        res.locals.auth=getGuestAuth()
+        res.locals.auth=getGuestAuth();
     }
     
     //# check if variables have defined values
-    if ( !_.isUndefined(req.body.username) && !_.isUndefined(verifiedToken.username) ){
+    if ( !_.isUndefined(req.body.auth.username) && !_.isUndefined(verifiedToken.username) ){
 
         //### verifying if tocken is not valid
-        if (  req.body.username != verifiedToken.username){
+        if (  req.body.auth.username != verifiedToken.username){
+            res.locals.jwtToken=jwtToken;
             res.locals.isAuthenticated=0;
             res.locals.auth=getGuestAuth();
         }
         //### verifying if tocken is valid 
-        else if (req.body.username == verifiedToken.username){
+        else if (req.body.auth.username == verifiedToken.username){
+            res.locals.jwtToken=jwtToken;
             res.locals.isAuthenticated=1;
             res.locals.auth={            
                 loggedIn:   1, 
@@ -40,7 +44,7 @@ const authenticateMW=function (req, res, next){
     }
     else{
         res.locals.isAuthenticated=0;
-        res.locals.auth=getGuestAuth()
+        res.locals.auth=getGuestAuth();
     }
 
     next();

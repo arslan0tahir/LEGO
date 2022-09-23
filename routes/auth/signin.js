@@ -61,7 +61,7 @@ router.post('/',async function (req, res) {
     if (authPreferred==1 || authSuccess==0){
         progressStack.push("Trying: ldap authetication")
         try {   
-            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.username, req.body.password);
+            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.auth.username, req.body.auth.password);
         } catch (error) {        
             progressStack.push("Error: ldap authetication")
             res.status(500).send(progressStack)
@@ -69,7 +69,7 @@ router.post('/',async function (req, res) {
 
         //validate authentication result
         if (_.has(authResult,'sAMAccountName')){
-            if (authResult.sAMAccountName==req.body.username){
+            if (authResult.sAMAccountName==req.body.auth.username){
                 authSuccess=1;
                 progressStack.push("Success: ldap authetication")
                 
@@ -118,7 +118,7 @@ router.post('/',async function (req, res) {
     //### if authentication successful, setting jwt webtocken in header
     if (authSuccess>0){
         tokenData={
-            username: req.body.username,
+            username: req.body.auth.username,
             time: Date()
         }
         jwtToken = jwtLibCtrl.generateTocken(tokenData);
@@ -127,7 +127,7 @@ router.post('/',async function (req, res) {
         //### verifying coded and decoded token 
         if (tokenData.username==verifiedTokenData.username && typeof(jwtToken)!=undefined){
             res.setHeader('Authorization', 'Bearer ' + jwtToken);
-            res.cookie(`jwtToken`,jwtToken); //setting cookie
+            //res.cookie(`jwtToken`,jwtToken); //server uri cookie is not being used anymore
         }
         else{
             progressStack.push("Error: tocken generation failed")    
@@ -144,7 +144,7 @@ router.post('/',async function (req, res) {
     else if (authSuccess==1){
         authResponse={
             loggedIn:   1, //if a valid jwt is generated
-            username:   req.body.username,
+            username:   req.body.auth.username,
             fullName:   authResult.displayName,
             IsAdmin:    0,
             jwtToken:  jwtToken,
