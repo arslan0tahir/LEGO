@@ -5,13 +5,7 @@ var router = express.Router({mergeParams: true})
 const Cookies=require('js-cookie');
 
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
-const signinLdapCtrl=require('../../controllers/auth/signinLdap')
-
-
-
-
-
-        
+const signinLdapCtrl=require('../../controllers/auth/signinLdap')        
 
 
 app=expressApp.app;
@@ -54,6 +48,10 @@ router.post('/',async function (req, res) {
     
     
     //!!! check if already logged in
+    if (res.locals.isAuthenticated==1){
+        res.status(500).send("You are already authenticates")
+        return;
+    }
 
     //!!! check if tocken is invalid to impemented in middleware
 
@@ -63,7 +61,7 @@ router.post('/',async function (req, res) {
     if (authPreferred==1 || authSuccess==0){
         progressStack.push("Trying: ldap authetication")
         try {   
-            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.userName, req.body.password);
+            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.username, req.body.password);
         } catch (error) {        
             progressStack.push("Error: ldap authetication")
             res.status(500).send(progressStack)
@@ -71,7 +69,7 @@ router.post('/',async function (req, res) {
 
         //validate authentication result
         if (_.has(authResult,'sAMAccountName')){
-            if (authResult.sAMAccountName==req.body.userName){
+            if (authResult.sAMAccountName==req.body.username){
                 authSuccess=1;
                 progressStack.push("Success: ldap authetication")
                 
@@ -120,25 +118,21 @@ router.post('/',async function (req, res) {
     //### if authentication successful, setting jwt webtocken in header
     if (authSuccess>0){
         tokenData={
-            userName: req.body.userName,
+            username: req.body.username,
             time: Date()
         }
         jwtToken = jwtLibCtrl.generateTocken(tokenData);
-        verifiedTokenData=jwtLibCtrl.verifyTocken(jwtToken)
+        verifiedTokenData=jwtLibCtrl.verifyToken(jwtToken)
         
         //### verifying coded and decoded token 
-        if (tokenData.userName==verifiedTokenData.userName && typeof(jwtToken)!=undefined){
+        if (tokenData.username==verifiedTokenData.username && typeof(jwtToken)!=undefined){
             res.setHeader('Authorization', 'Bearer ' + jwtToken);
             res.cookie(`jwtToken`,jwtToken); //setting cookie
         }
         else{
             progressStack.push("Error: tocken generation failed")    
             res.status(500).send(progressStack)
-        }
-
-        
-        
-
+        }      
     }
 
 
@@ -149,15 +143,15 @@ router.post('/',async function (req, res) {
     }
     else if (authSuccess==1){
         authResponse={
-            loggedIn: 1, //if a valid jwt is generated
-            username: req.body.userName,
-            fullName: authResult.displayName,
-            IsAdmin: 0,
-            jwtTocken:"",
-            groups: [0],
+            loggedIn:   1, //if a valid jwt is generated
+            username:   req.body.username,
+            fullName:   authResult.displayName,
+            IsAdmin:    0,
+            jwtToken:  jwtToken,
+            groups:     [0],
             // renderApps:[]
         }
-        res.send(authResponse);
+        res.send({auth:authResponse});
     }
 
     // res.status(500).send(progressStack);    

@@ -1,6 +1,9 @@
 const expressApp=require('./libraries/expressApp')
 // const express = require('express')
 var siteLists = require('./routes/system/siteLists/siteLists')
+
+var authenticateMW= require('./middleware/authenticateMW')
+
 var auth_signin= require('./routes/auth/signin')
 var auth_signup= require('./routes/auth/signup')
 var auth_signout= require('./routes/auth/signout')
@@ -28,6 +31,8 @@ app.use(function(req, res, next) {
     );
     next();
 });
+
+app.use(authenticateMW);
 
 
 app.use('/_api/auth/signin',auth_signin);

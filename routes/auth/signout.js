@@ -22,8 +22,8 @@ router.post('/',async function (req, res) {
     //### removing jwt tocken from header
     res.setHeader('Authorization', 'Bearer');
 
-    //### removing cookie
-    res.clearCookie("jwtToken");
+    //### jwt is stored in client side cookie so no need to do anything
+
 
     const authResponse={
         loggedIn: 0, //if a valid jwt is generated
@@ -35,7 +35,7 @@ router.post('/',async function (req, res) {
         // renderApps:[]
     }
 
-    res.send(authResponse);
+    res.send({auth : authResponse});
 })
 
 

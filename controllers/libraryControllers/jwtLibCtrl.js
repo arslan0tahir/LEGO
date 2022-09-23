@@ -1,7 +1,7 @@
 const jwt=require('../../libraries/jwt')
 
 const generateTocken=jwt.generateTocken
-const verifyTocken=jwt.verifyTocken
+const verifyToken=jwt.verifyTocken
 
 module.exports.generateTocken=generateTocken;
-module.exports.verifyTocken=verifyTocken;
+module.exports.verifyToken=verifyToken;
