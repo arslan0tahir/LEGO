@@ -89,7 +89,7 @@ const defaultConstraints=function(tableName,qty){
         password VARCHAR (255),
         profile BIGINT,
 
-        UNIQUE uniquekey (user_name,email) )ENGINE=INNODB`;
+        UNIQUE UsersUniqueKey (user_name,email) )ENGINE=INNODB`;
         defaultConstraints("Users","all");
 
         pool.query(query, function (err, result) {
@@ -105,8 +105,9 @@ const defaultConstraints=function(tableName,qty){
         /*-----------------Create Groups table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["Groups"]}(
           ${defaultColumns}  
-          groupName VARCHAR(255),
-          email VARCHAR(255) )ENGINE=INNODB`;
+          group_name VARCHAR(255),
+          email VARCHAR(255),
+          UNIQUE GroupsUniqueKey (group_name, email) )ENGINE=INNODB`;
         defaultConstraints("Groups","all")
 
         pool.query(query, function (err, result) {
@@ -115,7 +116,7 @@ const defaultConstraints=function(tableName,qty){
         });
         
         return;
-        
+
         /*-----------------Create GroupMemebership tablele*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["GroupMembership"]}(
           ${defaultColumns}  
