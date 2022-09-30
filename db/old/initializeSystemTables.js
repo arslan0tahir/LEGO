@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 var uuid=require('uuid/v1');
+const systemTables=('./systemTables').systemTables
 const bcrypt = require('bcrypt');
 
 //[START initialize info for bcrypt]
@@ -18,16 +19,16 @@ var con = mysql.createConnection({
 });
 
 let constriants=[];
-const systemTables={
-    Users: `\`${dbName}\`.\`users\``,
-    Groups: `\`${dbName}\`.\`groups\``,
-    GroupMembership: `\`${dbName}\`.\`group_membership\``,
-    Permissions: `\`${dbName}\`.\`permissions\``,
-    SiteRegister: `\`${dbName}\`.\`site_register\``,
-    SiteListRegister: `\`${dbName}\`.\`site_list_register\``,
-    SiteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
+// const systemTables={
+//     Users: `\`${dbName}\`.\`users\``,
+//     Groups: `\`${dbName}\`.\`groups\``,
+//     GroupMembership: `\`${dbName}\`.\`group_membership\``,
+//     Permissions: `\`${dbName}\`.\`permissions\``,
+//     SiteRegister: `\`${dbName}\`.\`site_register\``,
+//     SiteListRegister: `\`${dbName}\`.\`site_list_register\``,
+//     SiteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
 
-};
+// };
 
 //default columns are created in each table
 const defaultColumns=`

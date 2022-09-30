@@ -3,30 +3,28 @@ var pool=require('../../libraries/db/pool')
 // var uuid=require('uuid/v1');
 // const bcrypt = require('bcrypt');
 const dbConfig=require('../../configs/db')
+const systemTables=require('./systemTables').systemTables
 //[START initialize info for bcrypt]
 const saltRounds = 10;
 const myAdminPassword = 'admin';
-//[END initialize info for bcrypt]
-
-
 
 
 const dbName=dbConfig.dbName;
+const poolPromise=pool.promise();
 
 let constriants=[];
 
 //### define mapping for system tables, st stands for system table
-const systemTables={
-    Users: `\`${dbName}\`.\`st_users\``,
-    Groups: `\`${dbName}\`.\`st_groups\``,
-    GroupMembership: `\`${dbName}\`.\`st_group_membership\``,
-    Permissions: `\`${dbName}\`.\`st_permissions\``,
+// const systemTables={
+//     USERS: `\`${dbName}\`.\`st_users\``,
+//     GROUPS: `\`${dbName}\`.\`st_groups\``,
+//     GROUP_MEMBERSHIP: `\`${dbName}\`.\`st_group_membership\``,
+//     PERMISSIONS: `\`${dbName}\`.\`st_permissions\``,
+//     ROUTES: `\`${dbName}\`.\`st_routes\``,
 
-    SiteRegister: `\`${dbName}\`.\`site_register\``,
-    SiteListRegister: `\`${dbName}\`.\`site_list_register\``,
-    SiteListColumnRegister: `\`${dbName}\`.\`site_list_column_register\``,
-
-};
+//     LIST: `\`${dbName}\`.\`st_list_register\``,
+//     LIST_COLUMN: `\`${dbName}\`.\`st_list_column_register\``,
+// };
 
 //default columns are created in each table
 const defaultColumns=`
@@ -35,22 +33,19 @@ const defaultColumns=`
 
     created           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified          TIMESTAMP  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    createdBy         BIGINT,
-    modifiedBy        BIGINT,
-
-    permission        BIGINT,`
+    created_by         BIGINT,
+    modified_by        BIGINT,`
 //cell permissions
 
 const defaultConstraints=function(tableName,qty){
       
       if(qty=="all"){
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables["Users"]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables["Users"]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (permission) REFERENCES ${systemTables["Permissions"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (created_by) REFERENCES ${systemTables["USERS"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modified_by) REFERENCES ${systemTables["USERS"]}(id)`)
       }
       else {
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (createdBy) REFERENCES ${systemTables["Users"]}(id)`)
-          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modifiedBy) REFERENCES ${systemTables["Users"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (created_by) REFERENCES ${systemTables["USERS"]}(id)`)
+          constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modified_by) REFERENCES ${systemTables["USERS"]}(id)`)
        
       }
 }
@@ -70,18 +65,18 @@ const defaultConstraints=function(tableName,qty){
   
   
   /*Delete already existed database named "legos":*/
-  pool.query(`DROP DATABASE  IF EXISTS ${dbName}`, function (err, result) {
+  pool.query(`DROP DATABASE  IF EXISTS ${dbName}`, (err, rows, fields)=> {
     if (err) throw err;
     console.log("Database deleted");
       //### create a database named "legos":
-    pool.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`, function (err, result) {
+    pool.query(`CREATE DATABASE IF NOT EXISTS ${dbName}`, async (err, result)=> {
         if (err) throw err;
         console.log("Database created");
 
 
         //### create USERS table:*/
         let query=`
-        CREATE TABLE IF NOT EXISTS ${systemTables["Users"]} (
+        CREATE TABLE IF NOT EXISTS ${systemTables["USERS"]} (
         ${defaultColumns}  
         user_name  VARCHAR(255),
         email VARCHAR(255),
@@ -90,135 +85,171 @@ const defaultConstraints=function(tableName,qty){
         profile BIGINT,
 
         UNIQUE UsersUniqueKey (user_name,email) )ENGINE=INNODB`;
-        defaultConstraints("Users","all");
+        defaultConstraints("USERS","all"); 
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["USERS"]}`)
+        }
+        catch(e){
+          throw e 
+        }       
+        // if (err) { throw err; } else { console.log(`Table created : ${systemTables["USERS"]}`) };
 
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["Users"]}`);
-          // console.log(result)
-        });
-        // pool.destroy()
+        
 
 
 
-
-        /*-----------------Create Groups table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["Groups"]}(
+        //### create Groups table
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["GROUPS"]}(
           ${defaultColumns}  
           group_name VARCHAR(255),
           email VARCHAR(255),
           UNIQUE GroupsUniqueKey (group_name, email) )ENGINE=INNODB`;
-        defaultConstraints("Groups","all")
+        defaultConstraints("GROUPS","all")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["GROUPS"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
 
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["Groups"]}`);
-        });
         
-        return;
 
-        /*-----------------Create GroupMemebership tablele*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["GroupMembership"]}(
+
+        //### create Group Memebership table*/
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["GROUP_MEMBERSHIP"]}(
           ${defaultColumns}  
-          groupId BIGINT,
-          userId BIGINT
+          group_id BIGINT,
+          user_id BIGINT
         )ENGINE=INNODB`;
-        defaultConstraints("GroupMembership","all")
-        constriants.push(`ALTER TABLE ${systemTables["GroupMembership"]} ADD CONSTRAINT FOREIGN KEY (groupId) REFERENCES ${systemTables["Groups"]}(id)`)
-        constriants.push(`ALTER TABLE ${systemTables["GroupMembership"]} ADD CONSTRAINT FOREIGN KEY (userId) REFERENCES ${systemTables["Users"]}(id)`)
-        
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["GroupMembership"]}`);
-        });
-        
-
-        /*-----------------Create Permissions table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["Permissions"]}(
-          ${defaultColumns}  
-          fullControl JSON,
-          createItem JSON,
-          readItem JSON,
-          updateItem JSON,
-          deleteItem JSON,
-          changePermissions JSON            
-        )ENGINE=INNODB`;
-        //FK Contraint on rowPerm is not applied on permissions table (rowPerm Column is not used)
-        defaultConstraints("Permissions","")
-
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["Permissions"]}`);
-        });
-
-        /*-----------------Create Site Register table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["SiteRegister"]}(
-          ${defaultColumns}  
-          siteName VARCHAR(255),
-          parentSite BIGINT                      
-        )ENGINE=INNODB`;          
-        defaultConstraints("SiteRegister","all")
-        constriants.push(`ALTER TABLE ${systemTables["SiteRegister"]} ADD CONSTRAINT FOREIGN KEY (parentSite) REFERENCES ${systemTables["SiteRegister"]}(id)`)
-
-
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["SiteRegister"]}`);
-        });
+        defaultConstraints("GROUP_MEMBERSHIP","all")
+        constriants.push(`ALTER TABLE ${systemTables["GROUP_MEMBERSHIP"]} ADD CONSTRAINT FOREIGN KEY (group_id) REFERENCES ${systemTables["GROUPS"]}(id)`)
+        constriants.push(`ALTER TABLE ${systemTables["GROUP_MEMBERSHIP"]} ADD CONSTRAINT FOREIGN KEY (user_id) REFERENCES ${systemTables["USERS"]}(id)`)
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["GROUP_MEMBERSHIP"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
+      
 
 
         /*-----------------Create Site List Register table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["SiteListRegister"]}(
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST"]}(
           ${defaultColumns}  
-          listName VARCHAR(255),
-          parentSite BIGINT                      
+          list_name VARCHAR(255)                    
         )ENGINE=INNODB`;          
-        defaultConstraints("SiteListRegister","all")
-        constriants.push(`ALTER TABLE ${systemTables["SiteListRegister"]} ADD CONSTRAINT FOREIGN KEY (parentSite) REFERENCES ${systemTables["SiteRegister"]}(id)`)
+        defaultConstraints("LIST","all")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["LIST"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
+
+ 
 
 
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["SiteListRegister"]}`);
-        });
 
-        /*-----------------Create Site List Column Register table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["SiteListColumnRegister"]}(
+
+        //### create Routes table
+        //route_type d OR f (d is for path to table and f is for path for activity/function)
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["ROUTES"]}(
           ${defaultColumns}  
-          columnName VARCHAR(255),
-          DataType VARCHAR(255),
-          parentList BIGINT                      
-        )ENGINE=INNODB`;          
-        defaultConstraints("SiteListColumnRegister","all")
-        constriants.push(`ALTER TABLE ${systemTables["SiteListColumnRegister"]} ADD CONSTRAINT FOREIGN KEY (parentList) REFERENCES ${systemTables["SiteListRegister"]}(id)`)
+          route_path VARCHAR(255),
+          route_type VARCHAR(255)                       
+        )ENGINE=INNODB`;  
+
+        defaultConstraints("ROUTES","all")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["ROUTES"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
 
 
-        pool.query(query, function (err, result) {
-          if (err) throw err;
-          console.log(`Table created : ${systemTables["SiteListColumnRegister"]}`);
-        });
+
+
+
+
+
+        //### create Permissions table:*/
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["PERMISSIONS"]}(
+          ${defaultColumns}
+          table_id BIGINT,
+          row_id BIGINT,  
+          full_control TINYINT(1),
+          create_item TINYINT(1),
+          read_item   TINYINT(1),
+          update_item TINYINT(1),
+          delete_item TINYINT(1),
+          read_list   TINYINT(1),
+          approve_item     TINYINT(1),
+          INDEX PermissionIndex (table_id,row_id)  )ENGINE=INNODB`;          
+        //FK Contraint on rowPerm is not applied on permissions table (rowPerm Column is not used)
+        defaultConstraints("PERMISSIONS","")
+        //??? contaraints for table_id and row_id
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["PERMISSIONS"]}`)
+        }
+        catch(e){
+          throw e 
+        }         
+
+
+
+        //###-create LIST_COLUMN table:*/
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_COLUMN"]}(
+          ${defaultColumns}  
+          column_name VARCHAR(255),
+          DataType VARCHAR(255) )ENGINE=INNODB`;      
+
+        defaultConstraints("LIST_COLUMN","all")
+
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
+        }
+        catch(e){
+          throw e 
+        }  
+
+
+        
+
+
 
 
         /*-----------------Add constraints*/
-        console.log(constriants.join(";\n"))
-        con.query(constriants.join(";"), function (err, result) {
-          if (err) throw err;
+        
+        try{
+          for(let i=0;i<constriants.length;i++){
+            res = await poolPromise.query(constriants[i]);
+            console.log(constriants[i])
+          }
+
+          
+          // res = await poolPromise.query(constriants.join(";\n"));
           console.log(`All registered constraints applied`);
-        });
+        }
+        catch(e){
+          throw e 
+        }  
+
+        
+       
+
+
 
         
 
-        //  console.log(baseData.join(";\n"))
-        //  con.query(baseData.join(";"), function (err, result) {
-        //    if (err) throw err;
-        //    console.log(`All registered constraints applied`);
-        //  });
-
-
-
         
-
-        pool.end();
     });//END Create database
 
   });
