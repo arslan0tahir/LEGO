@@ -2,12 +2,15 @@ const _=require('underscore');
 const express = require('express');
 const expressApp=require('../../libraries/expressApp.js')
 const router = express.Router({mergeParams: true})
-const db=require('../../db/db')
+// const db=require('../../db/db')
 const Cookies=require('js-cookie');
 
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
 const signinLdapCtrl=require('../../controllers/auth/signinLdap')        
 
+
+
+//### all db operation shal be performed through controller
 
 app=expressApp.app;
 app.use(function(req, res, next) {
@@ -76,7 +79,8 @@ router.post('/',async function (req, res) {
             if (authResult.sAMAccountName==req.body.auth.username){
                 authSuccess=1;
 
-                // db.process.setUserPassword()
+                //shall be verified at office
+                signinLdapCtrl.ldapCacheUserInDb(req.body.auth.username, req.body.auth.password);
                 progressStack.push("Success: ldap authetication")
                 
             }        
@@ -86,9 +90,8 @@ router.post('/',async function (req, res) {
         }
     }
 
-
     //### ldap cache or local user authentication
-    else if (authPreferred==2 || authSuccess==0){
+    if (authPreferred==2 || authSuccess==0){
         progressStack.push("Trying: local/cache authetication")            
         try { 
             //!!! Method to be defined here
