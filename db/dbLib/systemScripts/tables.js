@@ -1,5 +1,5 @@
 var mysql = require('mysql');
-var {pool,execute}=require('../pool').pool;
+var {pool,execute}=require('../pool');
 const dbConfig=require('../../../configs/db')
 const systemTables=require('../tables.map').systemTables
 //[START initialize info for bcrypt]

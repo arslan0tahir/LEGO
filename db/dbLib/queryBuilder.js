@@ -2,14 +2,14 @@
 const item={}
 const cluster={}
 
-item.create=function(tableName,obj,evalPerm=1){
+item.create=function(tableName,data,evalPerm=1){
 
     let q=`INSERT INTO ${tableName}`;
     let values='';
     let columns='';
 
-    columns=Object.keys(obj);
-    values=Object.values(obj);
+    columns=Object.keys(data);
+    values=Object.values(data);
 
     values=values.map((item)=>{
         if (typeof item== 'string'){
@@ -31,8 +31,23 @@ item.readById=function(tableName,id){
 
 }
 
-item.readByCondition=function(tableName,conditionObj){
+item.readByCondition=function(tableName,columns,condition){
 
+    let pairs='';
+    for (var key in condition){
+        let value=typeof condition[key] == 'string' ? `\'${condition[key]}\'` : condition[key] ;
+        pairs=pairs+' '+key+' = '+value
+    }
+    
+    q=`SELECT ${columns.join(', ')}
+    FROM ${tableName}
+    WHERE ${pairs}
+    LIMIT 1;`
+
+    return q;
+//     SELECT * FROM Customers
+// WHERE Country='Germany'
+// LIMIT 3;
 }
 
 item.updateById=function(tableName,rowId,data){
@@ -41,7 +56,7 @@ item.updateById=function(tableName,rowId,data){
 
     for (var key in data){
         let value=typeof data[key] == 'string' ? `\'${data[key]}\'` : data[key] ;
-        pair=pair+' '+key+' = '+value
+        pairs=pairs+' '+key+' = '+value
     }
 
 
