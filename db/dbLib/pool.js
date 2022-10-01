@@ -4,8 +4,20 @@ const mysqlConfig= require('../../configs/db').connConfig
 
 
 const pool = mysql.createPool(mysqlConfig);
+const poolPromise=pool.promise();
 
-module.exports=pool;
+module.exports.pool=pool;
+module.exports.poolPromise=poolPromise;
+module.exports.execute=async function(query){
+    try{
+        res = await poolPromise.query(query);
+        console.log(`Query Executed : ${query}`)
+    }
+    catch(e){
+        throw e 
+    } 
+}
+
 
 // pool.query("SELECT * FROM TABLE_NAME",(err, data) => {
 //     if(err) {

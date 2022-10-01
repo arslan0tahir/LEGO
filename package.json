@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/arslan0tahir/LEGO#readme",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "circular-json": "^0.5.9",
     "cors": "^2.8.5",

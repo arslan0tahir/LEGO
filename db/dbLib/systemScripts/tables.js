@@ -1,9 +1,7 @@
 var mysql = require('mysql');
-var pool=require('../../libraries/db/pool')
-// var uuid=require('uuid/v1');
-// const bcrypt = require('bcrypt');
-const dbConfig=require('../../configs/db')
-const systemTables=require('./systemTables').systemTables
+var {pool,execute}=require('../pool').pool;
+const dbConfig=require('../../../configs/db')
+const systemTables=require('../tables.map').systemTables
 //[START initialize info for bcrypt]
 const saltRounds = 10;
 const myAdminPassword = 'admin';
@@ -14,19 +12,7 @@ const poolPromise=pool.promise();
 
 let constriants=[];
 
-//### define mapping for system tables, st stands for system table
-// const systemTables={
-//     USERS: `\`${dbName}\`.\`st_users\``,
-//     GROUPS: `\`${dbName}\`.\`st_groups\``,
-//     GROUP_MEMBERSHIP: `\`${dbName}\`.\`st_group_membership\``,
-//     PERMISSIONS: `\`${dbName}\`.\`st_permissions\``,
-//     ROUTES: `\`${dbName}\`.\`st_routes\``,
 
-//     LIST: `\`${dbName}\`.\`st_list_register\``,
-//     LIST_COLUMN: `\`${dbName}\`.\`st_list_column_register\``,
-// };
-
-//default columns are created in each table
 const defaultColumns=`
     id                BIGINT AUTO_INCREMENT PRIMARY KEY,
     uuid              VARCHAR(36),

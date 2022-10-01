@@ -1,7 +1,8 @@
 const _=require('underscore');
-var express = require('express');
-var expressApp=require('../../libraries/expressApp.js')
-var router = express.Router({mergeParams: true})
+const express = require('express');
+const expressApp=require('../../libraries/expressApp.js')
+const router = express.Router({mergeParams: true})
+const db=require('../../db/db')
 const Cookies=require('js-cookie');
 
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
@@ -52,7 +53,7 @@ router.post('/',async function (req, res) {
     
     //!!! check if already logged in
     if (res.locals.isAuthenticated==1){
-        res.status(500).send("You are already authenticates")
+        res.status(500).send("You are already authenticated")
         return;
     }
 
@@ -74,12 +75,14 @@ router.post('/',async function (req, res) {
         if (_.has(authResult,'sAMAccountName')){
             if (authResult.sAMAccountName==req.body.auth.username){
                 authSuccess=1;
+
+                // db.process.setUserPassword()
                 progressStack.push("Success: ldap authetication")
                 
             }        
         }
         else{
-            progressStack.push("Error: ldap authetication result recieved, but mismatch found")
+            progressStack.push("Error: ldap authetication result recieved.Mismatch found")
         }
     }
 

@@ -1,0 +1,3 @@
+All functions defined in dbLib shall only be utilized within db parent
+db parent will exposed to be used in controllers.
+Generic functions shall be written in 'libraries'
