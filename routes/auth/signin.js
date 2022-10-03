@@ -8,6 +8,8 @@ const signin=require('../../controllers/auth/signin');
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
 const signinLdapCtrl=require('../../controllers/auth/signinLdap');        
 const { sign } = require('jsonwebtoken');
+const logger=require('../../logger/logger')
+const sessionUid=require('../../libraries/sessionUid')
 
 
 
@@ -25,7 +27,7 @@ app.use(function(req, res, next) {
 
 router.post('/',async function (req, res) {
 
-
+    logger.info("REQUEST "+ sessionUid())
 
     let progressStack=[];
 
@@ -73,6 +75,7 @@ router.post('/',async function (req, res) {
         } catch (error) {        
             progressStack.push("Error: ldap authetication")
             res.status(500).send(progressStack)
+            return;
         }
 
         //validate authentication result
@@ -108,6 +111,7 @@ router.post('/',async function (req, res) {
             progressStack.push("Error: local/cache authetication")    
             console.log(error)
             res.status(500).send(progressStack)
+            return;
         }     
     }
     
@@ -137,6 +141,7 @@ router.post('/',async function (req, res) {
         else{
             progressStack.push("Error: tocken generation failed")    
             res.status(500).send(progressStack)
+            return;
         }      
     }
 
@@ -145,6 +150,7 @@ router.post('/',async function (req, res) {
     if (authSuccess==0){
         progressStack.push("Error: All athentication method failed");
         res.status(500).send(progressStack); 
+        return;
     }
     else if (authSuccess==1){
         authResponse={

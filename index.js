@@ -1,13 +1,15 @@
 const expressApp=require('./libraries/expressApp')
-// const express = require('express')
-var siteLists = require('./routes/system/siteLists/siteLists')
-
 var authenticateMW= require('./middleware/authenticateMW')
+const errors=require('./errors/errors')
+const logger=require('./logger/logger')
 
-var auth_signin= require('./routes/auth/signin')
-var auth_signup= require('./routes/auth/signup')
-var auth_signout= require('./routes/auth/signout')
-var auth_reinstate= require('./routes/auth/reinstate')
+const sessionUid=require('./libraries/sessionUid')
+
+
+const auth_signin= require('./routes/auth/signin')
+const auth_signup= require('./routes/auth/signup')
+const auth_signout= require('./routes/auth/signout')
+const auth_reinstate= require('./routes/auth/reinstate')
 const cors = require('cors');
 
 var bodyParser     =        require("body-parser");
@@ -26,6 +28,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(function(req, res, next) {
+
+    logger.info("CREATED ON REQUEST "+ sessionUid(1))
     res.header(
       "Access-Control-Allow-Headers",
       "x-access-token, Origin, Content-Type, Accept"
@@ -33,28 +37,23 @@ app.use(function(req, res, next) {
     next();
 });
 
-app.use(authenticateMW);
 
+
+logger.info("Start "+ sessionUid())
+app.use(authenticateMW);
 
 app.use('/_api/auth/signin',auth_signin);
 app.use('/_api/auth/signup',auth_signup);
 app.use('/_api/auth/signout',auth_signout);
 app.use('/_api/auth/reinstate',auth_reinstate);
-
-//!!! if not route found 
-
+logger.info("END "+ sessionUid())
 
 
-//endpoint to CRUD on lists metadata of perticular site
-// app.use('/:siteId/system/sitelists/:ListId', siteLists)
 
-// app.use(/.*System\/SiteLists/i,siteLists)
+app.use(errors.errorLogger);
+app.use(errors.errorResponder);
+app.use(errors.invalidPathHandler);
 
-
-// function(req,res,next){
-//     app.use(siteLists);
-//     res.send("regex matched");
-// }test
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 

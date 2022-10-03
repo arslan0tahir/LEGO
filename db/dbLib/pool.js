@@ -1,10 +1,11 @@
 const mysql = require('mysql2');
 const mysqlConfig= require('../../configs/db').connConfig
-
-
+const logger=require('../../logger/logger')
 
 const pool = mysql.createPool(mysqlConfig);
 const poolPromise=pool.promise();
+
+
 
 module.exports.pool=pool;
 module.exports.poolPromise=poolPromise;
