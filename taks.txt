@@ -1,4 +1,6 @@
 pending---tocken expiry implementation
 pending---segregate refresh and accees tocken
-pending---loca authentication
+pending---local authentication
+pending---user full name, as it cant be null
+pending---authentication waiting icon
 pending---bcrypt and salting

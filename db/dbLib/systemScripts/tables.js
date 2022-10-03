@@ -65,6 +65,7 @@ const defaultConstraints=function(tableName,qty){
         CREATE TABLE IF NOT EXISTS ${systemTables["USERS"]} (
         ${defaultColumns}  
         user_name  VARCHAR(255),
+        full_name VARCHAR(255),
         email VARCHAR(255),
         authentication_type VARCHAR(255),
         password VARCHAR (255),

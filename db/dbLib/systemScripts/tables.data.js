@@ -17,6 +17,7 @@ tableData=async function(){
     // createdBy  : null,//null for createdby is only used for admin user 
     // modifiedBy : null,//null for modifiedby is only used for admin user 
     user_name  : 'admin',
+    full_name : 'Admin',
     email : "admin@local.com",
     authentication_type  : "local",
     password : bcrypt.hashSync("admin", saltRounds),
@@ -27,6 +28,7 @@ tableData=async function(){
     // createdBy  : null,//null for createdby is only used for admin user 
     // modifiedBy : null,//null for modifiedby is only used for admin user 
     user_name  : 'user',
+    full_name : 'User',
     email : "user@local.com",
     authentication_type  : "local",
     password : bcrypt.hashSync("user", saltRounds),

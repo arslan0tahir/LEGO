@@ -1,4 +1,4 @@
-
+//!!! permissions shall not be evaluated for system tables
 const item={}
 const cluster={}
 

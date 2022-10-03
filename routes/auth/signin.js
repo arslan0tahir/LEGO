@@ -4,9 +4,10 @@ const expressApp=require('../../libraries/expressApp.js')
 const router = express.Router({mergeParams: true})
 // const db=require('../../db/db')
 const Cookies=require('js-cookie');
-
+const signin=require('../../controllers/auth/signin');
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
-const signinLdapCtrl=require('../../controllers/auth/signinLdap')        
+const signinLdapCtrl=require('../../controllers/auth/signinLdap');        
+const { sign } = require('jsonwebtoken');
 
 
 
@@ -95,24 +96,19 @@ router.post('/',async function (req, res) {
         progressStack.push("Trying: local/cache authetication")            
         try { 
             //!!! Method to be defined here
+            authResult=await signin.local.authenticate(req.body.auth.username, req.body.auth.password)
+            if (authResult.isAuthenticated){
+                authSuccess=2;
+            }
+            else{
+                progressStack.push("Error: local/cache authetication")    
+            }
+            
         } catch (error) {     
             progressStack.push("Error: local/cache authetication")    
             console.log(error)
             res.status(500).send(progressStack)
-        } 
-        
-        //!!! validate authenitcation results and decare success
-
-        // if (_.has(authResult,'sAMAccountName')){
-        //     if (authResult.sAMAccountName==req.body.userName){
-        //         authSuccess=1;
-        //         progressStack.push("Success: ldap authetication")
-                
-        //     }        
-        // }
-        // else{
-        //     progressStack.push("Error: ldap authetication result recieved, but mismatch found")
-        // }
+        }     
     }
     
 
@@ -145,7 +141,7 @@ router.post('/',async function (req, res) {
     }
 
 
-    //# response for ldap authentication
+    //#### response for ldap authentication
     if (authSuccess==0){
         progressStack.push("Error: All athentication method failed");
         res.status(500).send(progressStack); 
@@ -155,6 +151,18 @@ router.post('/',async function (req, res) {
             loggedIn:   1, //if a valid jwt is generated
             username:   req.body.auth.username,
             fullName:   authResult.displayName,
+            IsAdmin:    0,
+            jwtToken:  jwtToken,
+            groups:     [0],
+            // renderApps:[]
+        }
+        res.send({auth:authResponse});
+    }
+    else if (authSuccess==2){
+        authResponse={
+            loggedIn:   1, //if a valid jwt is generated
+            username:   req.body.auth.username,
+            fullName:   authResult.user.fullName,
             IsAdmin:    0,
             jwtToken:  jwtToken,
             groups:     [0],

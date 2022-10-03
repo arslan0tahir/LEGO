@@ -12,6 +12,7 @@ module.exports.execute=async function(query){
     try{
         res = await poolPromise.query(query);
         console.log(`Query Executed : ${query}`)
+        return res;
     }
     catch(e){
         throw e 
