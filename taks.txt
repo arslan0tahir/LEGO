@@ -1,6 +1,8 @@
+pending---catch errors through exoress
+pending---ldap cache login
 pending---tocken expiry implementation
 pending---segregate refresh and accees tocken
 pending---local authentication
 pending---user full name, as it cant be null
 pending---authentication waiting icon
-pending---bcrypt and salting
+done---bcrypt and salting
