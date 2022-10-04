@@ -64,14 +64,12 @@ const defaultConstraints=function(tableName,qty){
         let query=`
         CREATE TABLE IF NOT EXISTS ${systemTables["USERS"]} (
         ${defaultColumns}  
-        user_name  VARCHAR(255),
+        user_name  VARCHAR(255) UNIQUE,
         full_name VARCHAR(255),
-        email VARCHAR(255),
+        email VARCHAR(255) UNIQUE,
         authentication_type VARCHAR(255),
         password VARCHAR (255),
-        profile BIGINT,
-
-        UNIQUE UsersUniqueKey (user_name,email) )ENGINE=INNODB`;
+        profile BIGINT )ENGINE=INNODB`;
         defaultConstraints("USERS","all"); 
         try{
           res = await poolPromise.query(query);

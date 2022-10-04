@@ -1,13 +1,15 @@
 //!!! permissions shall not be evaluated for system tables
 const item={}
 const cluster={}
+const LOGGER_IDENTITY=" <DB: QB> "
+
 
 item.create=function(tableName,data,evalPerm=1){
 
-    let q=`INSERT INTO ${tableName}`;
+
     let values='';
     let columns='';
-
+    let q='';
     columns=Object.keys(data);
     values=Object.values(data);
 
@@ -32,7 +34,7 @@ item.readById=function(tableName,id){
 }
 
 item.readByCondition=function(tableName,columns,condition){
-
+    let q='';
     let pairs='';
     for (var key in condition){
         let value=typeof condition[key] == 'string' ? `\'${condition[key]}\'` : condition[key] ;

@@ -3,6 +3,7 @@ const dbConfig=require('../../../configs/db')
 const systemTables=require('../tables.map').systemTables
 const QB=require('../queryBuilder')
 const bcrypt=require('bcrypt')
+const {bcryptHash}=require('../../../libraries/bcrypt')
 const dbName=dbConfig.dbName;//### define mapping for system tables, st stands for system table
 const poolPromise=pool.promise();
 
@@ -20,7 +21,7 @@ tableData=async function(){
     full_name : 'Admin',
     email : "admin@local.com",
     authentication_type  : "local",
-    password : bcrypt.hashSync("admin", saltRounds),
+    password : bcryptHash("admin"),
   })
 
   data["USERS"].push({

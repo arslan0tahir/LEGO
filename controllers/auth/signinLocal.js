@@ -1,5 +1,5 @@
 const db = require("../../db/db");
-const bcrypt=require('bcrypt');
+const {bcryptVerify}=require('../../libraries/bcrypt');
 
 let local={};
 
@@ -10,7 +10,7 @@ local.authenticate=async function(username,password){
     const dbUser=await db.process.getUser(username)
 
     if (dbUser.user_name==username){
-        isAuthenticated=bcrypt.compareSync(password,dbUser.password);
+        isAuthenticated=bcrypt.bcryptVerify(password,dbUser.password);
         return {
             isAuthenticated:isAuthenticated,
             user:{

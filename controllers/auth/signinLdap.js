@@ -1,28 +1,44 @@
 const ladapAuthLib=require('../../libraries/ldapAuthentication');
 const db=require('../../db/db');
+const logger=require('../../logger/logger')
 
+
+const LOGGER_IDENTITY=" <CTRL: SIGNIN>"
 const ldapAuthenticate=async function(userName,password){
     authResult=await ladapAuthLib.auth(userName,password);
     return authResult;
 }
 
-const ldapCacheUserInDb=async function(username,password){
+const ldapCacheUserInDb=async function(userData){
     let user={
-        username:username,
-        password:password,
-        authentication_type: 'ldap'
+        email:      userData.email,
+        password:   userData.password,
+        authentication_type: userData.authentication_type,
+        full_name   : userData.full_name
     }
     
     //### return id if user alredy exist
-    let userId=await db.process.getUserId(username)
+    let userId=await db.process.getUserIdByEmail(user.email)
 
-    if (id){
+    if (userId){
         //### update user in db
-        await db.process.updateUser(id,user)
+        isUpdated=await db.process.updateUser(userId,{password:   userData.password})
+        if (isUpdated){
+            logger.info(LOGGER_IDENTITY,`cached ldap user ${user.email} updated `);
+        }else{
+            logger.warn(LOGGER_IDENTITY,`cache failed ${user.email} `);
+        }
     }
     else{
         //### create user in db
-        await db.process.createUser(user)
+        let insertId=await db.process.createUser(user)
+        if (typeof insertId== 'number'){
+            logger.info(LOGGER_IDENTITY,`cached ldap user ${user.email} with insertId ${insertId} `);
+        }
+        else{
+            logger.warn(LOGGER_IDENTITY,`cache failed ${user.email} `);
+        }
+
     }
     // db.process.updateUser(id,data)
 }

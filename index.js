@@ -2,8 +2,11 @@ const expressApp=require('./libraries/expressApp')
 var authenticateMW= require('./middleware/authenticateMW')
 const errors=require('./errors/errors')
 const logger=require('./logger/logger')
+var httpContext = require('express-http-context');
 
-const sessionUid=require('./libraries/sessionUid')
+
+
+const requestUid=require('./libraries/requestUid')
 
 
 const auth_signin= require('./routes/auth/signin')
@@ -17,8 +20,7 @@ var bodyParser     =        require("body-parser");
 const app = expressApp.app;
 const port = 33333
 
-// app.get('/', (req, res) => res.send('Hello World!'))
-
+app.use(httpContext.middleware);
 app.use(cors({
     // origin: ['https://127.0.0.1:3000']
     origin: '*'
@@ -29,7 +31,12 @@ app.use(bodyParser.json());
 
 app.use(function(req, res, next) {
 
-    logger.info("CREATED ON REQUEST "+ sessionUid(1))
+    httpContext.set('requestId', requestUid())
+
+    logger.info(" <REQUEST: URL> " + JSON.stringify(req.originalUrl))
+    logger.info(" <REQUEST: HEADER> " + JSON.stringify(req.headers))
+    logger.info(" <REQUEST: BODY> " +JSON.stringify(req.body))
+
     res.header(
       "Access-Control-Allow-Headers",
       "x-access-token, Origin, Content-Type, Accept"
@@ -39,14 +46,12 @@ app.use(function(req, res, next) {
 
 
 
-logger.info("Start "+ sessionUid())
 app.use(authenticateMW);
 
 app.use('/_api/auth/signin',auth_signin);
 app.use('/_api/auth/signup',auth_signup);
 app.use('/_api/auth/signout',auth_signout);
 app.use('/_api/auth/reinstate',auth_reinstate);
-logger.info("END "+ sessionUid())
 
 
 

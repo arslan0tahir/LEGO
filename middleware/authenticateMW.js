@@ -1,5 +1,7 @@
 const _=require('underscore');
 const jwtLibCtrl = require('../controllers/libraryControllers/jwtLibCtrl')
+const logger=require('../logger/logger')
+const LOGGER_IDENTITY=" <MW: SIGNIN> "
 
 const authenticateMW=function (req, res, next){
     //### if its a fresh login req will contain username and password in auth
@@ -15,6 +17,7 @@ const authenticateMW=function (req, res, next){
         verifiedToken=jwtLibCtrl.verifyToken(jwtToken);
     }
     catch(e){
+        logger.warn(" <MW: SIGNIN> "+ e.message)
         res.locals.isAuthenticated=0;
         res.locals.auth=getGuestAuth();
     }
@@ -27,9 +30,11 @@ const authenticateMW=function (req, res, next){
             res.locals.jwtToken=jwtToken;
             res.locals.isAuthenticated=0;
             res.locals.auth=getGuestAuth();
+            logger.info(LOGGER_IDENTITY+ "As Guest")
         }
         //### verifying if tocken is valid 
         else if (req.body.auth.username == verifiedToken.username){
+            logger.info(LOGGER_IDENTITY+ verifiedToken.username+" verified")
             res.locals.jwtToken=jwtToken;
             res.locals.isAuthenticated=1;
             res.locals.auth={            
@@ -45,6 +50,7 @@ const authenticateMW=function (req, res, next){
     else{
         res.locals.isAuthenticated=0;
         res.locals.auth=getGuestAuth();
+        logger.info(LOGGER_IDENTITY+ "You are guest")
     }
 
     next();
