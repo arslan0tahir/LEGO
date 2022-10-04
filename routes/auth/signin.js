@@ -4,14 +4,16 @@ const expressApp=require('../../libraries/expressApp.js')
 const router = express.Router({mergeParams: true})
 // const db=require('../../db/db')
 const Cookies=require('js-cookie');
-const signin=require('../../controllers/auth/signin');
+const signinCtrl=require('../../controllers/auth/signin');
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
 const signinLdapCtrl=require('../../controllers/auth/signinLdap');        
 const { sign } = require('jsonwebtoken');
 const logger=require('../../logger/logger')
-const sessionUid=require('../../libraries/sessionUid')
+const {bcryptHash}=require('../../libraries/bcrypt')
+var httpContext = require('express-http-context');
 
 
+const LOGGER_IDENTITY=" <ROUTE: SIGNIN> "
 
 //### all db operation shal be performed through controller
 
@@ -27,7 +29,7 @@ app.use(function(req, res, next) {
 
 router.post('/',async function (req, res) {
 
-    logger.info("REQUEST "+ sessionUid())
+    logger.info(LOGGER_IDENTITY)
 
     let progressStack=[];
 
@@ -59,6 +61,7 @@ router.post('/',async function (req, res) {
     
     //!!! check if already logged in
     if (res.locals.isAuthenticated==1){
+        logger.warn(LOGGER_IDENTITY+ "despite a valid jwt token, user tried to reauthenticate")
         res.status(500).send("You are already authenticated")
         return;
     }
@@ -69,47 +72,60 @@ router.post('/',async function (req, res) {
 
     //### ldap authentication
     if (authPreferred==1 || authSuccess==0){
-        progressStack.push("Trying: ldap authetication")
+
+        logger.info(LOGGER_IDENTITY+ "starting ldap authentication")
+        let userPrincipalName= ''
         try {   
             authResult=await signinLdapCtrl.ldapAuthenticate(req.body.auth.username, req.body.auth.password);
-        } catch (error) {        
+        } catch (error) {
+            logger.error(LOGGER_IDENTITY + error.message)        
             progressStack.push("Error: ldap authetication")
             res.status(500).send(progressStack)
             return;
         }
 
-        //validate authentication result
+        //### if authenticated, cache user in DB 
         if (_.has(authResult,'sAMAccountName')){
             if (authResult.sAMAccountName==req.body.auth.username){
                 authSuccess=1;
 
-                //shall be verified at office
-                signinLdapCtrl.ldapCacheUserInDb(req.body.auth.username, req.body.auth.password);
-                progressStack.push("Success: ldap authetication")
-                
+                userPrincipalName= authResult. userPrincipalName 
+                logger.info(LOGGER_IDENTITY + "caching ldap login credentials in db") 
+
+                //### cache ldap user in DB
+                let userData={
+                    email:      userPrincipalName,
+                    full_name:  authResult.displayName,
+                    password:   bcryptHash(req.body.auth.password),
+                    authentication_type: 'ldap'
+                }
+                signinLdapCtrl.ldapCacheUserInDb(userData);                
             }        
         }
         else{
+            logger.error(LOGGER_IDENTITY+"ldap server not responding") 
             progressStack.push("Error: ldap authetication result recieved.Mismatch found")
         }
     }
 
-    //### ldap cache or local user authentication
+    //###local user authentication
     if (authPreferred==2 || authSuccess==0){
-        progressStack.push("Trying: local/cache authetication")            
+        logger.info(LOGGER_IDENTITY+"starting local authentication")
+        progressStack.push("Trying: local/cache authetication")
+                 
         try { 
             //!!! Method to be defined here
-            authResult=await signin.local.authenticate(req.body.auth.username, req.body.auth.password)
+            authResult=await signinCtrl.local.authenticate(req.body.auth.username, req.body.auth.password)
             if (authResult.isAuthenticated){
                 authSuccess=2;
             }
             else{
+                logger.info(LOGGER_IDENTITY+"authentication failed") 
                 progressStack.push("Error: local/cache authetication")    
             }
             
         } catch (error) {     
-            progressStack.push("Error: local/cache authetication")    
-            console.log(error)
+            logger.error(LOGGER_IDENTITY + error.message) 
             res.status(500).send(progressStack)
             return;
         }     
@@ -148,11 +164,13 @@ router.post('/',async function (req, res) {
 
     //#### response for ldap authentication
     if (authSuccess==0){
+        logger.info(LOGGER_IDENTITY+"all authentication method failed")
         progressStack.push("Error: All athentication method failed");
         res.status(500).send(progressStack); 
         return;
     }
     else if (authSuccess==1){
+        logger.info(LOGGER_IDENTITY+"ldap authentication sccessful. logged in as "+req.body.auth.username )
         authResponse={
             loggedIn:   1, //if a valid jwt is generated
             username:   req.body.auth.username,
@@ -165,6 +183,8 @@ router.post('/',async function (req, res) {
         res.send({auth:authResponse});
     }
     else if (authSuccess==2){
+        logger.info(LOGGER_IDENTITY+"local authentication sccessful. logged in as "+req.body.auth.username )
+
         authResponse={
             loggedIn:   1, //if a valid jwt is generated
             username:   req.body.auth.username,
