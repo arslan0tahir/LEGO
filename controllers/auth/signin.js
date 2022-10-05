@@ -7,6 +7,7 @@ let local={};
 
 // signin.ldap=signinLdap.ldap;
 signin.local=signinLocal.local;
+signin.ldap=signinLdap.ldap;
 
 module.exports=signin;
 

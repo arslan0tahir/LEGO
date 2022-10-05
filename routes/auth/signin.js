@@ -1,19 +1,18 @@
 const _=require('underscore');
 const express = require('express');
-const expressApp=require('../../libraries/expressApp.js')
+const expressApp=require('../../libraries/expressApp.js');
 const router = express.Router({mergeParams: true})
-// const db=require('../../db/db')
 const Cookies=require('js-cookie');
 const signinCtrl=require('../../controllers/auth/signin');
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
-const signinLdapCtrl=require('../../controllers/auth/signinLdap');        
 const { sign } = require('jsonwebtoken');
-const logger=require('../../logger/logger')
-const {bcryptHash}=require('../../libraries/bcrypt')
+const logger=require('../../logger/logger');
+const {bcryptHash}=require('../../libraries/bcrypt');
+const ldapConfig=require('../../configs/ldap');
 var httpContext = require('express-http-context');
 
 
-const LOGGER_IDENTITY=" <ROUTE: SIGNIN> "
+const LOGGER_IDENTITY=" <ROUTE: SIGNIN> ";
 
 //### all db operation shal be performed through controller
 
@@ -73,14 +72,14 @@ router.post('/',async function (req, res) {
     //### ldap authentication
     if (authPreferred==1 || authSuccess==0){
 
-        logger.info(LOGGER_IDENTITY+ "starting ldap authentication")
-        let userPrincipalName= ''
+        logger.info(LOGGER_IDENTITY+ "starting ldap authentication");
+        let userPrincipalName= '';
         try {   
-            authResult=await signinLdapCtrl.ldapAuthenticate(req.body.auth.username, req.body.auth.password);
+            authResult=await signinCtrl.ldap.serverAuthentication(req.body.auth.username, req.body.auth.password);
         } catch (error) {
-            logger.error(LOGGER_IDENTITY + error.message)        
-            progressStack.push("Error: ldap authetication")
-            res.status(500).send(progressStack)
+            logger.error(LOGGER_IDENTITY + error.message); 
+            progressStack.push("Error: ldap authetication failed");
+            res.status(500).send(progressStack);
             return;
         }
 
@@ -99,12 +98,21 @@ router.post('/',async function (req, res) {
                     password:   bcryptHash(req.body.auth.password),
                     authentication_type: 'ldap'
                 }
-                signinLdapCtrl.ldapCacheUserInDb(userData);                
+                signinCtrl.ldap.cacheUserInDb(userData);                
             }        
         }
         else{
-            logger.error(LOGGER_IDENTITY+"ldap server not responding") 
-            progressStack.push("Error: ldap authetication result recieved.Mismatch found")
+            logger.warn(LOGGER_IDENTITY+"ldap server not responding, starting local ldap authentication") 
+
+            authResult=await signinCtrl.ldap.localAuthentication(`${req.body.auth.username}@${ldapConfig.ldapDomain}`,req.body.auth.password)
+            if (authResult.isAuthenticated){
+                logger.info(LOGGER_IDENTITY+`local ldap authentication successful as ${authResult.user.email}`) 
+                authSuccess=2;
+            }
+            else{
+                progressStack.push("Error: ldap server offline");
+            }
+
         }
     }
 

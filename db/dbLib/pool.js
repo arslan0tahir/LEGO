@@ -9,8 +9,10 @@ const LOGGER_IDENTITY=" <DB: POOL> "
 
 module.exports.pool=pool;
 module.exports.poolPromise=poolPromise;
-module.exports.execute=async function(query){
- 
+
+module.exports.execute=async function(q){
+    const query=q.q;
+    const action=q.action;
 
     try{
         logger.info(LOGGER_IDENTITY + "trying...... \n" + query )

@@ -23,7 +23,13 @@ item.create=function(tableName,data,evalPerm=1){
     })
     q=`INSERT INTO ${tableName} ( ${columns.join(', ')} )
     VALUES ( ${values.join(', ')} );`
-    return q;
+    // return q;
+
+    return{
+        q:q,
+        action: 'CREATE',
+        table:tableName
+    }
 }
 
 
@@ -46,7 +52,12 @@ item.readByCondition=function(tableName,columns,condition){
     WHERE ${pairs}
     LIMIT 1;`
 
-    return q;
+    return{
+        q:q,
+        action: 'READ',
+        table:tableName
+    }
+    // return q;
 //     SELECT * FROM Customers
 // WHERE Country='Germany'
 // LIMIT 3;
@@ -65,7 +76,13 @@ item.updateById=function(tableName,rowId,data){
     q=`UPDATE  ${tableName}
     SET ${pairs}
     WHERE id= ${rowId} `;
-    return q;
+
+    return{
+        q:q,
+        action: 'UPDATE',
+        table:tableName
+    }
+    // return q;
 
 //     UPDATE Customers
 // SET ContactName = 'Alfred Schmidt', City = 'Frankfurt'
@@ -77,18 +94,40 @@ item.updateByCondition=function(tableName,conditionObj,data){
 }
 
 item.deleteById=function(tableName,id){
-    return `DELETE FROM ${tableName} WHERE id=${id}`
+    let q=`DELETE FROM ${tableName} WHERE id=${id}`
+
+    return{
+        q:q,
+        action: 'DELETE',
+        table:tableName
+    }
+
+
     // DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
 
 }
 
 item.deleteByCondition=function(tableName,conditionObj,data){
+    let q='';
+
+    return{
+        q:q,
+        action: 'DELETE',
+        table:tableName
+    }
 
 }
 
 
 cluster.deleteById=function(tableName,ids){//array of ids
-    return `DELETE FROM ${tableName} WHERE id IN ( ${ids.join(', ')} )`
+    let q=`DELETE FROM ${tableName} WHERE id IN ( ${ids.join(', ')} )`;
+
+    return{
+        q:q,
+        action: 'DELETE',
+        table:tableName
+    }
+    // return 
 
     // DELETE from tablename WHERE id IN (1,2,3,...,254);
 }

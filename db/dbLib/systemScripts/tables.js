@@ -87,8 +87,8 @@ const defaultConstraints=function(tableName,qty){
         //### create Groups table
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["GROUPS"]}(
           ${defaultColumns}  
-          group_name VARCHAR(255),
-          email VARCHAR(255),
+          group_name VARCHAR(255) UNIQUE,
+          email VARCHAR(255) UNIQUE,
           UNIQUE GroupsUniqueKey (group_name, email) )ENGINE=INNODB`;
         defaultConstraints("GROUPS","all")
         try{
@@ -106,8 +106,10 @@ const defaultConstraints=function(tableName,qty){
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["GROUP_MEMBERSHIP"]}(
           ${defaultColumns}  
           group_id BIGINT,
-          user_id BIGINT
-        )ENGINE=INNODB`;
+          user_id BIGINT,
+          CONSTRAINT group_membership_unique UNIQUE (group_id, user_id)
+          
+          )ENGINE=INNODB`;
         defaultConstraints("GROUP_MEMBERSHIP","all")
         constriants.push(`ALTER TABLE ${systemTables["GROUP_MEMBERSHIP"]} ADD CONSTRAINT FOREIGN KEY (group_id) REFERENCES ${systemTables["GROUPS"]}(id)`)
         constriants.push(`ALTER TABLE ${systemTables["GROUP_MEMBERSHIP"]} ADD CONSTRAINT FOREIGN KEY (user_id) REFERENCES ${systemTables["USERS"]}(id)`)

@@ -1,3 +1,4 @@
+pending---return complete object on create and update operations
 pending---catch errors through exoress
 pending---ldap cache login
 pending---tocken expiry implementation

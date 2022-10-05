@@ -13,6 +13,7 @@ module.exports = {
         
         userPassword: '',
         username: '',
+        ldapDomain: 'red.local',//my property
         // starttls: false
       
   };
