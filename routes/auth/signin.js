@@ -26,7 +26,7 @@ app.use(function(req, res, next) {
 });
 
 
-router.post('/',async function (req, res) {
+router.post('/',async function (req, res, next) {
 
     logger.info(LOGGER_IDENTITY)
 
@@ -79,8 +79,12 @@ router.post('/',async function (req, res) {
         } catch (error) {
             logger.error(LOGGER_IDENTITY + error.message); 
             progressStack.push("Error: ldap authetication failed");
-            res.status(500).send(progressStack);
-            return;
+            
+            error.TYPE="SERVER_ERROR";
+            error.CUSTOM_MSG="ldap";
+            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+            next(error);
+
         }
 
         //### if authenticated, cache user in DB 
@@ -206,12 +210,14 @@ router.post('/',async function (req, res) {
     }
 
     // res.status(500).send(progressStack);    
-
+    next();
 })
 
 
-router.get('/', function (req, res) {
+router.get('/', function (req, res, next) {
     res.send({ title: 'At Signin' })
+
+    next();
 })
 
 module.exports = router

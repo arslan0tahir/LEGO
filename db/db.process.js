@@ -17,7 +17,7 @@ process.createUser=async (data)=>{
 process.getUserPassword=(username)=>{}
 
 process.getUserIdByUsername=async (username)=>{
-    let q=QB.item.readByCondition(tableMap["USERS"],['id'],{username:username})
+    let q=QB.item.readByCondition(tableMap["USERS"],['id'],{user_name:username})
     const [rows, fields]=await execute(q);
     return ( ( ( rows||[] )[0] || {} ).id || 0 ) ;
 }
@@ -49,17 +49,32 @@ process.getGroups=async (userId)=>{
 }
 
 
-process.memberOf=(userId)=>{
+process.getUserGroups=async (userId)=>{
+    let Query={};
 
-    let q=`SELECT   ${tm["GROUPS"]}.id AS group_id , ${tm["GROUPS"]}.group_name
+
+    Query.q=`SELECT   ${tm["GROUPS"]}.id AS group_id , ${tm["GROUPS"]}.group_name
             FROM    ${tm["GROUPS"]} , ${tm["USERS"]} , ${tm["GROUP_MEMBERSHIP"]}
             WHERE   ${tm["GROUP_MEMBERSHIP"]}.user_id = ${tm["USERS"]}.id 
                 AND ${tm["GROUP_MEMBERSHIP"]}.group_id = ${tm["GROUPS"]}.id
                 AND ${tm["USERS"]}.id = ${userId}; ` 
+    
+
+    
+    const [rows, fields]=await execute(Query);
+    return rows;
 
 } //return list of 
-process.isAdmin=(userId)=>{
-    
+process.isAdmin=async (userId)=>{
+
+    const userGroups=await process.getUserGroups(userId);    
+    for(const group of userGroups){
+        if (group.group_name=="admins"){
+            return 1;
+        }
+    }
+
+    return 0;    
 } //return boolean
 
 process.updateUserPassword=(currUserName,password)=>{}

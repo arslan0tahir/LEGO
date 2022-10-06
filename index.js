@@ -1,9 +1,9 @@
+var httpContext = require('express-http-context');
 const expressApp=require('./libraries/expressApp')
 var authenticateMW= require('./middleware/authenticateMW')
 const errors=require('./errors/errors')
 const logger=require('./logger/logger')
-var httpContext = require('express-http-context');
-
+const db=require('./db/db');
 
 
 const requestUid=require('./libraries/requestUid')
@@ -20,7 +20,7 @@ var bodyParser     =        require("body-parser");
 const app = expressApp.app;
 const port = 33333
 
-app.use(httpContext.middleware);
+
 app.use(cors({
     // origin: ['https://127.0.0.1:3000']
     origin: '*'
@@ -28,6 +28,7 @@ app.use(cors({
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(httpContext.middleware);//shall come after bodyparsers
 
 app.use(function(req, res, next) {
 
@@ -46,12 +47,22 @@ app.use(function(req, res, next) {
 
 
 
+
+
+
 app.use(authenticateMW);
+//### user context set MW
 
 app.use('/_api/auth/signin',auth_signin);
 app.use('/_api/auth/signup',auth_signup);
 app.use('/_api/auth/signout',auth_signout);
 app.use('/_api/auth/reinstate',auth_reinstate);
+
+
+
+
+//admin routes
+app.use('/_api/s/index',auth_reinstate); //system paths
 
 
 
