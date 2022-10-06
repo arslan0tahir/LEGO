@@ -77,8 +77,7 @@ router.post('/',async function (req, res, next) {
         try {   
             authResult=await signinCtrl.ldap.serverAuthentication(req.body.auth.username, req.body.auth.password);
         } catch (error) {
-            logger.error(LOGGER_IDENTITY + error.message); 
-            progressStack.push("Error: ldap authetication failed");
+            logger.error(LOGGER_IDENTITY + error.message);             
             
             error.TYPE="SERVER_ERROR";
             error.CUSTOM_MSG="ldap";
@@ -109,12 +108,15 @@ router.post('/',async function (req, res, next) {
             logger.warn(LOGGER_IDENTITY+"ldap server not responding, starting local ldap authentication") 
 
             authResult=await signinCtrl.ldap.localAuthentication(`${req.body.auth.username}@${ldapConfig.ldapDomain}`,req.body.auth.password)
+            
             if (authResult.isAuthenticated){
                 logger.info(LOGGER_IDENTITY+`local ldap authentication successful as ${authResult.user.email}`) 
                 authSuccess=2;
             }
             else{
-                progressStack.push("Error: ldap server offline");
+                progressStack.push("ldap cache authentication failed");
+                logger.warn("ldap cache authentication failed");
+                
             }
 
         }
@@ -123,7 +125,6 @@ router.post('/',async function (req, res, next) {
     //###local user authentication
     if (authPreferred==2 || authSuccess==0){
         logger.info(LOGGER_IDENTITY+"starting local authentication")
-        progressStack.push("Trying: local/cache authetication")
                  
         try { 
             //!!! Method to be defined here
@@ -132,14 +133,17 @@ router.post('/',async function (req, res, next) {
                 authSuccess=2;
             }
             else{
-                logger.info(LOGGER_IDENTITY+"authentication failed") 
-                progressStack.push("Error: local/cache authetication")    
+                logger.info(LOGGER_IDENTITY+"local authetication failed") 
+                progressStack.push("local authetication failed")    
             }
             
         } catch (error) {     
             logger.error(LOGGER_IDENTITY + error.message) 
-            res.status(500).send(progressStack)
-            return;
+
+            error.TYPE="SERVER_ERROR";
+            error.CUSTOM_MSG="local";
+            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+            next(error);
         }     
     }
     
@@ -152,6 +156,7 @@ router.post('/',async function (req, res, next) {
     
     //### generating response based upon authentication type    
     
+
     //### if authentication successful, setting jwt webtocken in header
     if (authSuccess>0){
         tokenData={
@@ -167,19 +172,23 @@ router.post('/',async function (req, res, next) {
             //res.cookie(`jwtToken`,jwtToken); //server uri cookie is not being used anymore
         }
         else{
-            progressStack.push("Error: tocken generation failed")    
-            res.status(500).send(progressStack)
-            return;
+            error.TYPE="SERVER_ERROR";
+            error.CUSTOM_MSG="jwt";
+            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+            return next(error);            
         }      
     }
 
 
     //#### response for ldap authentication
     if (authSuccess==0){
-        logger.info(LOGGER_IDENTITY+"all authentication method failed")
-        progressStack.push("Error: All athentication method failed");
-        res.status(500).send(progressStack); 
-        return;
+        
+        let error=new Error;
+        error.message=progressStack.join('\n');
+        error.TYPE="SERVER_ERROR";
+        error.CUSTOM_MSG="authFailed";
+        error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+        return next(error);
     }
     else if (authSuccess==1){
         logger.info(LOGGER_IDENTITY+"ldap authentication sccessful. logged in as "+req.body.auth.username )
