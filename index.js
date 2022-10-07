@@ -1,6 +1,9 @@
+require('express-async-errors');
 var httpContext = require('express-http-context');
 const expressApp=require('./libraries/expressApp')
+
 var authenticateMW= require('./middleware/authenticateMW')
+var adminMW= require('./middleware/adminMW')
 const errors=require('./errors/errors')
 const logger=require('./logger/logger')
 const db=require('./db/db');
@@ -59,14 +62,15 @@ app.use('/_api/auth/signout',auth_signout);
 app.use('/_api/auth/reinstate',auth_reinstate);
 
 
+// app.use('/_api/d/:tableName',auth_reinstate);
 
 
 //admin routes
-app.use('/_api/s/index',auth_reinstate); //system paths
+app.use('/_api/s/index',adminMW,auth_reinstate); //system paths
 
 
 
-app.use(errors.errorLogger);
+app.use(errors.errorLogger);  
 app.use(errors.errorResponder);
 app.use(errors.invalidPathHandler);
 
