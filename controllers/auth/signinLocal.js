@@ -7,10 +7,10 @@ let local={};
 local.authenticate=async function(username,password){
     
     let isAuthenticated=0;
-    const dbUser=await db.process.getUser(username)
+    const dbUser=await db.process.getUser(username);
 
     if (dbUser.user_name==username){
-        isAuthenticated=bcrypt.bcryptVerify(password,dbUser.password);
+        isAuthenticated=bcryptVerify(dbUser.password,password);
         return {
             isAuthenticated:isAuthenticated,
             user:{

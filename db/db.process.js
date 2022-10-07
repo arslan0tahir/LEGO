@@ -2,6 +2,7 @@ const QB=require('./dbLib/queryBuilder')
 const tableMap=require('./dbLib/tables.map').systemTables
 const {pool,execute}=require('./dbLib/pool')
 const _=require('underscore')
+const ldapConfig=require('../configs/ldap')
 
 let process={}
 let tm=tableMap;
@@ -28,6 +29,22 @@ process.getUserIdByEmail=async (email)=>{
       
     return ( ( ( rows||[] )[0] || {} ).id || 0 ) ;
 }
+
+process.getUserIdByUsernameGeneric=async (username)=>{
+
+    let userId=0;
+    userId=await process.getUserIdByEmail(`${username}@${ldapConfig.ldapDomain}`);
+    if (!userId){
+        //for local user 
+        userId=await process.getUserIdByUsername(username);   
+    }
+    else {
+        //for any other authentication method
+    }
+
+    return userId;
+}
+
 
 process.getUser=async (username)=>{
     let q=QB.item.readByCondition(tableMap["USERS"],['user_name','email','full_name','password'],{user_name : username})

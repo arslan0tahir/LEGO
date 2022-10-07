@@ -1,5 +1,5 @@
 const logger=require('../logger/logger')
-const errorMsg=require('./errorMsg')
+const errorMsg=require('./errorMsg').errorMsg
 const error={};
 
 error.errorLogger=(error, req, res, next) => {
@@ -8,8 +8,8 @@ error.errorLogger=(error, req, res, next) => {
 }
 
 error.errorResponder= (error, req, res, next) => {
-    const msg='';
-    const type='';
+    let msg='';
+    let type='';
 
     res.header("Content-Type", 'application/json')
 
@@ -29,14 +29,14 @@ error.errorResponder= (error, req, res, next) => {
     }
 
 
-
+    
     if (type=="SERVER_ERROR"){
-      logger.error(error.LOGGER_IDENTITY + msg); 
+      logger.error(error.LOGGER_IDENTITY + error.message); 
       res.status(500).send(msg);
     }
 
     else if (type=="SERVER_OFFLINE"){
-      logger.error(error.LOGGER_IDENTITY + msg); 
+      logger.error(error.LOGGER_IDENTITY + error.message); 
       res.status(503).send(msg);
     }
     else{

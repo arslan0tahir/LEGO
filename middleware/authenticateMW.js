@@ -1,5 +1,6 @@
 var httpContext = require('express-http-context');
 const _=require('underscore');
+const ldapConfig=require('../configs/ldap')
 const jwtLibCtrl = require('../controllers/libraryControllers/jwtLibCtrl')
 const logger=require('../logger/logger')
 const db=require('../db/db')
@@ -74,7 +75,9 @@ const authenticateMW=async function (req, res, next){
     }
 
     //### in future coding respose.local is planned to be replaced with userContext 
-    userId=await db.process.getUserIdByUsername(auth.username);
+    
+    //### get userId for administration check
+    userId=await db.process.getUserIdByUsernameGeneric(auth.username)
     isAdmin=await db.process.isAdmin(userId)
     let userContext={
         isAuthenticated:    isAuthenticated,

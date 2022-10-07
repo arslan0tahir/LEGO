@@ -7,5 +7,9 @@ module.exports.errorMsg={
     
     SERVER_ERROR:{
         ldap: "ldap server responded with error",
+        local:"local authentcation failed",
+        jwt: "token failed",
+        db:  "db failed",
+        authFailed: "all authentication method failed"
     }
 }

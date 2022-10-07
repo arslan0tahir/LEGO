@@ -18,13 +18,17 @@ module.exports.execute=async function(q){
         logger.info(LOGGER_IDENTITY + "trying...... \n" + query )
         res = await poolPromise.query(query);
         // console.log(`Query Executed : ${query}`)
-        logger.info(LOGGER_IDENTITY + "query \n" + query )
+        logger.info(LOGGER_IDENTITY + "Executed \n" + query )
         logger.info(LOGGER_IDENTITY +"query respose \n" +JSON.stringify(res[0]) ) 
         return res;
     }
     catch(e){
-        logger.error(LOGGER_IDENTITY+e.message)
-        throw e 
+        
+        error.TYPE="SERVER_ERROR";
+        error.CUSTOM_MSG="db";
+        error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+        next(error);
+        
     } 
 }
 
