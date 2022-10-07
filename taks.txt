@@ -1,9 +1,10 @@
-pending---return complete object on create and update operations
-pending---catch errors through exoress
-pending---ldap cache login
+urgent---urgent need to implement list view with CRUD and permissions
 pending---tocken expiry implementation
 pending---segregate refresh and accees tocken
-pending---local authentication
 pending---user full name, as it cant be null
 pending---authentication waiting icon
+aborted---return complete object on create and update operations
 done---bcrypt and salting
+done---ldap cache login
+done---local authentication
+done---catch errors through express
