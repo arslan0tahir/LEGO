@@ -1,3 +1,4 @@
+var httpContext = require('express-http-context');
 const _=require('underscore');
 const express = require('express');
 const expressApp=require('../../libraries/expressApp.js');
@@ -5,11 +6,12 @@ const router = express.Router({mergeParams: true})
 const Cookies=require('js-cookie');
 const signinCtrl=require('../../controllers/auth/signin');
 const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
-const { sign } = require('jsonwebtoken');
+const {sign} = require('jsonwebtoken');
 const logger=require('../../logger/logger');
 const {bcryptHash}=require('../../libraries/bcrypt');
 const ldapConfig=require('../../configs/ldap');
-var httpContext = require('express-http-context');
+const err=require('../../errors/errors');
+
 
 
 const LOGGER_IDENTITY=" <ROUTE: SIGNIN> ";
@@ -61,8 +63,9 @@ router.post('/',async function (req, res, next) {
     //!!! check if already logged in
     if (res.locals.isAuthenticated==1){
         logger.warn(LOGGER_IDENTITY+ "despite a valid jwt token, user tried to reauthenticate")
-        res.status(500).send("You are already authenticated")
-        return;
+
+        let e=err.ERROR(new Error, 'SERVER_ERROR','','alreadyAuthticated', LOGGER_IDENTITY)
+        return next(e);
     }
 
     //!!! check if tocken is invalid to impemented in middleware
@@ -77,12 +80,15 @@ router.post('/',async function (req, res, next) {
         try {   
             authResult=await signinCtrl.ldap.serverAuthentication(req.body.auth.username, req.body.auth.password);
         } catch (error) {
-            logger.error(LOGGER_IDENTITY + error.message);             
+            // logger.error(LOGGER_IDENTITY + error.message); 
             
-            error.TYPE="SERVER_ERROR";
-            error.CUSTOM_MSG="ldap";
-            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
-            next(error);
+            let e=err.ERROR(error, 'SERVER_ERROR', error.message, "ldap", LOGGER_IDENTITY);
+            return next(e);
+            
+            // error.TYPE="SERVER_ERROR";
+            // error.CUSTOM_MSG="ldap";
+            // error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+            // next(error);
 
         }
 
@@ -122,7 +128,7 @@ router.post('/',async function (req, res, next) {
         }
     }
 
-    //###local user authentication
+    //### local user authentication
     if (authPreferred==2 || authSuccess==0){
         logger.info(LOGGER_IDENTITY+"starting local authentication")
                  
@@ -138,12 +144,10 @@ router.post('/',async function (req, res, next) {
             }
             
         } catch (error) {     
-            logger.error(LOGGER_IDENTITY + error.message) 
+            // logger.error(LOGGER_IDENTITY + error.message) 
 
-            error.TYPE="SERVER_ERROR";
-            error.CUSTOM_MSG="local";
-            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
-            next(error);
+            let e=err.ERROR(new Error, 'SERVER_ERROR','','localAuthServerFailed', LOGGER_IDENTITY)
+            return next(e);            
         }     
     }
     
@@ -172,10 +176,9 @@ router.post('/',async function (req, res, next) {
             //res.cookie(`jwtToken`,jwtToken); //server uri cookie is not being used anymore
         }
         else{
-            error.TYPE="SERVER_ERROR";
-            error.CUSTOM_MSG="jwt";
-            error.LOGGER_IDENTITY=LOGGER_IDENTITY;
-            return next(error);            
+            
+            let e=err.ERROR(new Error, 'SERVER_ERROR','','jwt', LOGGER_IDENTITY)
+            return next(e);           
         }      
     }
 
@@ -183,12 +186,8 @@ router.post('/',async function (req, res, next) {
     //#### response for ldap authentication
     if (authSuccess==0){
         
-        let error=new Error;
-        error.message=progressStack.join('\n');
-        error.TYPE="SERVER_ERROR";
-        error.CUSTOM_MSG="authFailed";
-        error.LOGGER_IDENTITY=LOGGER_IDENTITY;
-        return next(error);
+        let e=err.ERROR(new Error, 'SERVER_ERROR', progressStack.join('\n'), "authFailed", LOGGER_IDENTITY);
+        return next(e);
     }
     else if (authSuccess==1){
         logger.info(LOGGER_IDENTITY+"ldap authentication sccessful. logged in as "+req.body.auth.username )
@@ -225,7 +224,6 @@ router.post('/',async function (req, res, next) {
 
 router.get('/', function (req, res, next) {
     res.send({ title: 'At Signin' })
-
     next();
 })
 

@@ -4,12 +4,21 @@ const ldapConfig=require('../configs/ldap')
 const jwtLibCtrl = require('../controllers/libraryControllers/jwtLibCtrl')
 const logger=require('../logger/logger')
 const db=require('../db/db')
+const err=require('../errors/errors');
+
 
 
 const LOGGER_IDENTITY=" <MW: SIGNIN> "
 
 const authenticateMW=async function (req, res, next){
     //### if its a fresh login req will contain username and password in auth
+
+    if (_.isEmpty(req.body)){
+        // logger.error(LOGGER_IDENTITY+"Request is empty");
+        let e=err.ERROR(new Error, 'INVALID_INPUT','','emptyRequest', LOGGER_IDENTITY)
+        return next(e);  
+    }
+
 
     let bearerToken={};
     let jwtToken='';
@@ -79,6 +88,10 @@ const authenticateMW=async function (req, res, next){
     //### get userId for administration check
     userId=await db.process.getUserIdByUsernameGeneric(auth.username)
     isAdmin=await db.process.isAdmin(userId)
+
+    if (isAdmin){logger.info(`Dear ${auth.username}, you are ADMIN....`)}
+    else{logger.info(`Dear ${auth.username}, you are RESTRICTED USER....`)}
+
     let userContext={
         isAuthenticated:    isAuthenticated,
         isAdmin:            isAdmin,
