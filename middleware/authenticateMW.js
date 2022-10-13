@@ -13,7 +13,7 @@ const LOGGER_IDENTITY=" <MW: SIGNIN> "
 const authenticateMW=async function (req, res, next){
     //### if its a fresh login req will contain username and password in auth
 
-    if (_.isEmpty(req.body)){
+    if (_.isEmpty(req.body) && req.method!="GET"){
         // logger.error(LOGGER_IDENTITY+"Request is empty");
         let e=err.ERROR(new Error, 'INVALID_INPUT','','emptyRequest', LOGGER_IDENTITY)
         return next(e);  
@@ -23,13 +23,18 @@ const authenticateMW=async function (req, res, next){
     let bearerToken={};
     let jwtToken='';
     let verifiedToken='';
+    let username='';
+    let fullName=''
   
     let userId=0;
     let isAdmin=0;
     let isAuthenticated=0;
     let auth={};
     
-    //### verifying tocken 
+
+
+
+    //### trying to verify token
     try{
         bearerToken=req.header('Authorization');
         jwtToken=bearerToken.split(" ")[1];
@@ -38,65 +43,53 @@ const authenticateMW=async function (req, res, next){
     catch(e){
         logger.warn(" <MW: SIGNIN> "+ e.message)
         isAuthenticated=0;
-        auth=getGuestAuth();
-
         res.locals.isAuthenticated=isAuthenticated;
-        res.locals.auth=auth;
+        return next(); 
+
     }
+
+
+
+
+  
+    //### if tocken is valid 
+    if (verifiedToken?.username){
     
-    //### check if variables have defined values
-    if ( !_.isUndefined(req.body.auth.username) && !_.isUndefined(verifiedToken.username) ){
+        isAuthenticated=1;    
+    
+        res.locals.jwtToken=jwtToken;
+        res.locals.verifiedToken=verifiedToken;
+        res.locals.isAuthenticated=isAuthenticated;
 
-        //### verifying if tocken is not valid
-        if (  req.body.auth.username != verifiedToken.username){
-            isAuthenticated=0;
-            auth=getGuestAuth();
-
-            res.locals.isAuthenticated=isAuthenticated;
-            res.locals.auth=auth;
-            logger.info(LOGGER_IDENTITY+ "You are guest")
-        }
-        //### verifying if tocken is valid 
-        else if (req.body.auth.username == verifiedToken.username){
-            logger.info(LOGGER_IDENTITY+ verifiedToken.username+" verified")
-            isAuthenticated=1;
-            auth={            
-                loggedIn:   1, 
-                username:   verifiedToken.username,
-                fullName:   req.body.auth.fullName,
-                IsAdmin:    0,
-                jwtToken:   "",
-                groups:     [0],        
-            } 
-
-            res.locals.jwtToken=jwtToken;
-            res.locals.isAuthenticated=isAuthenticated;
-            res.locals.auth=auth;
-        }
-    }
+        logger.info(LOGGER_IDENTITY+ verifiedToken.username+" verified")
+        
+    } 
+    //### if token is invalid
     else{
-        isAuthenticated=0;
-        auth=getGuestAuth();
-
+     
+        isAuthenticated=0;           
         res.locals.isAuthenticated=isAuthenticated;
-        res.locals.auth=auth;
         logger.info(LOGGER_IDENTITY+ "You are guest")
+
+
+        return next();//??? should error be raised here
+
     }
 
-    //### in future coding respose.local is planned to be replaced with userContext 
-    
-    //### get userId for administration check
-    userId=await db.process.getUserIdByUsernameGeneric(auth.username)
+
+
+    //### in future coding respose.local is planned to be replaced with userContext     
+    //### if token is valid get userId for administration check
+    userId=await db.process.getUserIdByUsernameGeneric(verifiedToken.username)
     isAdmin=await db.process.isAdmin(userId)
 
-    if (isAdmin){logger.info(`Dear ${auth.username}, you are ADMIN....`)}
-    else{logger.info(`Dear ${auth.username}, you are RESTRICTED USER....`)}
+    if (isAdmin){logger.info(`Dear ${verifiedToken.username}, you are ADMIN....`)}
+    else{logger.info(`Dear ${verifiedToken.username}, you are RESTRICTED USER....`)}
 
     let userContext={
         isAuthenticated:    isAuthenticated,
         isAdmin:            isAdmin,
-        userId:             userId,
-        auth:               auth
+        userId:             userId, 
     }
 
 
@@ -105,18 +98,6 @@ const authenticateMW=async function (req, res, next){
 }
 
 
-const getGuestAuth=()=>{
-    return (
-        {                    
-            loggedIn:   0, 
-            username:   "guest",
-            fullName:   "guest",
-            IsAdmin:    0,
-            jwtToken:   "",
-            groups:     [0]            
-         
-        }
-    )
-}
+
 
 module.exports=authenticateMW;

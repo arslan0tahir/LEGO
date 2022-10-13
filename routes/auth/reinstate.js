@@ -21,16 +21,48 @@ router.post('/',function (req, res) {
         
     //### restoring jwt tocken in header
     res.setHeader('Authorization', 'Bearer ' + res.locals.jwtToken); 
-    
+    let auth={};
     try{
         //### base on authenticate middleware response will be either guest or actual user
-        res.send({auth:res.locals.auth});
+        if (res.locals.isAuthenticated){
+            auth={            
+                loggedIn:   res.locals.isAuthenticated, 
+                username:   res.locals.verifiedToken.username,
+                fullName:   req.body.auth.fullName,
+                IsAdmin:    0,
+                jwtToken:   "",
+                groups:     [0],        
+            } 
+        }
+        else{
+            auth=getGuestAuth();
+        }
+
+
+
+
+        res.send({auth:auth});
     }
     catch(e){
-        res.status(500).send("Unknown reinstate response")
+        throw e
+
     }
 
 })
+
+const getGuestAuth=()=>{
+    return (
+        {                    
+            loggedIn:   0, 
+            username:   "guest",
+            fullName:   "guest",
+            IsAdmin:    0,
+            jwtToken:   "",
+            groups:     [0]            
+         
+        }
+    )
+}
 
 
 module.exports = router

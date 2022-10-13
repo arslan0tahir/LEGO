@@ -2,6 +2,7 @@ var mysql = require('mysql');
 var {pool,execute}=require('../pool');
 const dbConfig=require('../../../configs/db')
 const systemTables=require('../tables.map').systemTables
+const testTables=require('../tables.map').testTables
 //[START initialize info for bcrypt]
 const saltRounds = 10;
 const myAdminPassword = 'admin';
@@ -28,6 +29,10 @@ const defaultConstraints=function(tableName,qty){
       if(qty=="all"){
           constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (created_by) REFERENCES ${systemTables["USERS"]}(id)`)
           constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modified_by) REFERENCES ${systemTables["USERS"]}(id)`)
+      }
+      else if (qty=="test"){
+        constriants.push(`ALTER TABLE ${testTables[tableName]} ADD CONSTRAINT FOREIGN KEY (created_by) REFERENCES ${systemTables["USERS"]}(id)`)
+        constriants.push(`ALTER TABLE ${testTables[tableName]} ADD CONSTRAINT FOREIGN KEY (modified_by) REFERENCES ${systemTables["USERS"]}(id)`)  
       }
       else {
           constriants.push(`ALTER TABLE ${systemTables[tableName]} ADD CONSTRAINT FOREIGN KEY (created_by) REFERENCES ${systemTables["USERS"]}(id)`)
@@ -150,22 +155,7 @@ const defaultConstraints=function(tableName,qty){
           route_type VARCHAR(255)                       
         )ENGINE=INNODB`;  
 
-        defaultConstraints("ROUTES","all")
-        try{
-          res = await poolPromise.query(query);
-          console.log(`Table created : ${systemTables["ROUTES"]}`)
-        }
-        catch(e){
-          throw e 
-        } 
-
-
-
-
-
-
-
-        //### create Permissions table:*/
+       //### create Permissions table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["PERMISSIONS"]}(
           ${defaultColumns}
           table_id BIGINT,
@@ -208,7 +198,23 @@ const defaultConstraints=function(tableName,qty){
         }  
 
 
-        
+        //### create students table for testing
+        query=`CREATE TABLE IF NOT EXISTS ${testTables["STUDENTS"]}(
+          ${defaultColumns}  
+          FirstName VARCHAR(255),
+          LastName VARCHAR(255),
+          Age VARCHAR(255),
+          Class VARCHAR(255)
+           )ENGINE=INNODB`; 
+
+        defaultConstraints("STUDENTS","test")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${testTables["STUDENTS"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
 
 
 

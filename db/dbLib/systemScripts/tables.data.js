@@ -82,6 +82,7 @@ tableData=async function(){
 
   
   for(let key in data){
+  
     for(let i =0;i<data[key].length; i++){
       let q=QB.item.create(systemTables[key], data[key][i])
       let qd=QB.item.deleteById(systemTables[key], data[key][i].id)
@@ -92,8 +93,9 @@ tableData=async function(){
       // catch(e){ throw e}
 
       try{
-        res = await poolPromise.query(q);
-        console.log(`Query Executed : ${q}`)
+        // console.log("##################"+JSON.stringify(q.q))
+        res = await execute(q);
+        // console.log(`Query Executed : ${q}`)
       }
       catch(e){
         throw e 

@@ -31,13 +31,21 @@ error.errorLogger=(error, req, res, next) => {
 
 
 error.errorResponder= (error, req, res, next) => {
+
+    if (error){
+      res.header("Content-Type", 'application/json')
+      logger.info("ErrorHandling Middleware called")
+    }
+    else{
+      return next()
+    }
+
     let msg='';
     let type='';
     const requestId=httpContext.get('requestId')
 
-    res.header("Content-Type", 'application/json')
+    
 
-    logger.info("ErrorHandling Middleware called")
 
 
     //### msg is a client side message

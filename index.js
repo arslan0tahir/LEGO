@@ -16,6 +16,8 @@ const auth_signin= require('./routes/auth/signin')
 const auth_signup= require('./routes/auth/signup')
 const auth_signout= require('./routes/auth/signout')
 const auth_reinstate= require('./routes/auth/reinstate')
+
+const j_lists= require('./routes/j/lists')
 const cors = require('cors');
 
 var bodyParser     =        require("body-parser");
@@ -65,8 +67,12 @@ app.use('/_api/auth/reinstate',auth_reinstate);
 // app.use('/_api/d/:tableName',auth_reinstate);
 
 
-//admin routes
-app.use('/_api/s/index',adminMW,auth_reinstate); //system paths
+// app.use('/_api/s/index',adminMW,auth_reinstate); //system paths
+
+
+//through j path authorization is not computed 
+app.use(adminMW);
+app.use('/_api/j/lists',j_lists); //system paths
 
 
 
