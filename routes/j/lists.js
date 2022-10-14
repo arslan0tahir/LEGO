@@ -3,14 +3,11 @@ const _=require('underscore');
 const express = require('express');
 const expressApp=require('../../libraries/expressApp.js');
 const router = express.Router({mergeParams: true})
-const Cookies=require('js-cookie');
-const signinCtrl=require('../../controllers/auth/signin');
-const jwtLibCtrl = require('../../controllers/libraryControllers/jwtLibCtrl');
-const {sign} = require('jsonwebtoken');
+
+const listsCtrl = require('../../controllers/j/lists');
 const logger=require('../../logger/logger');
-const {bcryptHash}=require('../../libraries/bcrypt');
-const ldapConfig=require('../../configs/ldap');
 const err=require('../../errors/errors');
+const db = require('../../db/db.js');
 
 
 
@@ -33,17 +30,16 @@ router.post('/',async function (req, res, next) {
 })
 
 
-router.get('/', function (req, res, next) {
-    let q={};
-    q.$select=req.query.$select;
-    q.$from=req.query.$from;
-    q.$filter=req.query.$filter;
-    q.$orderBy=req.query.$orderBy;
-    q.$limit=req.query.$limit;
-    
+router.get('/',async function (req, res, next) {
+    let pq={};
+    pq.$select=JSON.parse(req.query.$select);
+    pq.$from=JSON.parse(req.query.$from);
+    pq.$filter=JSON.parse(req.query.$filter);
+    pq.$orderBy=JSON.parse(req.query.$orderBy);
+    pq.$limit=JSON.parse(req.query.$limit);
 
-
-    res.send(q);
+    rows=await db.process.getListByParams(pq);    
+    res.send(rows);
     next();
 })
 

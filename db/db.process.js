@@ -105,4 +105,10 @@ process.updateUser=async (id,data)=>{
     }
 }
 
+process.getListByParams=async (pq)=>{
+    let q=QB.cluster.readListByParam(pq);
+    const [rows, fields]=await execute(q);
+    return rows;
+}
+
 module.exports=process

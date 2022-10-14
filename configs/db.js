@@ -3,7 +3,7 @@ module.exports.connConfig = {
     host     : 'localhost',
     user     : 'lego',
     password : 'lego',
-    // database : 'lego',
+    database : 'lego',
     debug    :  false
 };
 

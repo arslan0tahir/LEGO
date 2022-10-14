@@ -71,8 +71,8 @@ app.use('/_api/auth/reinstate',auth_reinstate);
 
 
 //through j path authorization is not computed 
-app.use(adminMW);
-app.use('/_api/j/lists',j_lists); //system paths
+
+app.use('/_api/j/lists', adminMW, j_lists); //system paths
 
 
 
