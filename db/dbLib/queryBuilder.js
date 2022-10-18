@@ -140,6 +140,20 @@ cluster.deleteById=function(tableName,ids){//array of ids
     // DELETE from tablename WHERE id IN (1,2,3,...,254);
 }
 
+cluster.deleteAllRows=function(tableName){//array of ids
+    let q=`DELETE FROM ${tableName} `;
+
+    return{
+        q:q,
+        action: action.DELETE,
+        table:tableName
+    }
+    // return 
+
+    // DELETE from tablename WHERE id IN (1,2,3,...,254);
+}
+
+
 cluster.readListByParam=function(pq,isAdmin=0){
 
     
@@ -150,7 +164,7 @@ cluster.readListByParam=function(pq,isAdmin=0){
 
     let qsOB=params.queryStringOrderBy(pq.$orderBy)
     if (qsOB){ 
-        q.push(`ORDER BY    ${qsOB.join(' ')};`); 
+        q.push(`ORDER BY    ${qsOB.join(', ')};`); 
     }
 
     q=q.join("\n");    

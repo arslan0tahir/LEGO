@@ -13,6 +13,7 @@ module.exports.systemTables={
 
     LIST: `\`${dbName}\`.\`st_list_register\``,
     LIST_COLUMN: `\`${dbName}\`.\`st_list_column_register\``,
+    LIST_VIEWS: `\`${dbName}\`.\`st_list_views\``,
 };
 
 module.exports.testTables={

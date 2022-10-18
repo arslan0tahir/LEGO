@@ -74,9 +74,35 @@ tableData=async function(){
 
 
 
-  await execute(QB.cluster.deleteById(systemTables["GROUP_MEMBERSHIP"],[1,2]))
-  await execute(QB.cluster.deleteById(systemTables["GROUPS"],[1,2]))
-  await execute(QB.cluster.deleteById(systemTables["USERS"],[1,2]))
+
+  data["LIST"]=[]
+  for (const key in systemTables){
+    data["LIST"].push({
+      app_id      : 0,
+      list_system : 1,
+      list_name   : systemTables[key],
+      list_alias  : systemTables[key],    
+      list_map    : key,
+    })
+  }
+  
+ 
+  data["LIST_VIEWS"]=[];
+  data["LIST_VIEWS"].push({
+    view_name     : "dummy",
+    view_tables   : "[]", 
+    view_columns  : "[]", 
+    sort_by       : "[]",
+    allow_selection : 1,
+  })
+
+ 
+
+  await execute(QB.cluster.deleteAllRows(systemTables["GROUP_MEMBERSHIP"]))
+  await execute(QB.cluster.deleteAllRows(systemTables["GROUPS"]))
+  await execute(QB.cluster.deleteAllRows(systemTables["USERS"]))
+  await execute(QB.cluster.deleteAllRows(systemTables["LIST"]))
+  await execute(QB.cluster.deleteAllRows(systemTables["LIST_VIEWS"]))
 
 
 

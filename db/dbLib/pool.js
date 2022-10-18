@@ -6,6 +6,7 @@ const pool = mysql.createPool(mysqlConfig);
 const poolPromise=pool.promise();
 
 const LOGGER_IDENTITY=" <DB: POOL> "
+const err=require('../../errors/errors');
 
 module.exports.pool=pool;
 module.exports.poolPromise=poolPromise;
@@ -24,10 +25,12 @@ module.exports.execute=async function(q){
     }
     catch(error){
         
-        error.TYPE="SERVER_ERROR";
-        error.CUSTOM_MSG="db";
-        error.LOGGER_IDENTITY=LOGGER_IDENTITY;
-        throw error;
+        // error.TYPE="SERVER_ERROR";
+        // error.CUSTOM_MSG="db";
+        // error.LOGGER_IDENTITY=LOGGER_IDENTITY;
+
+        let e=err.ERROR(error, 'SERVER_ERROR', error.message, "db", LOGGER_IDENTITY);
+        throw e;
         
     } 
 }

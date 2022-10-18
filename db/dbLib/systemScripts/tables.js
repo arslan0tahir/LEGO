@@ -130,8 +130,13 @@ const defaultConstraints=function(tableName,qty){
 
         /*-----------------Create Site List Register table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST"]}(
-          ${defaultColumns}  
-          list_name VARCHAR(255)                    
+          ${defaultColumns}
+          app_id BIGINT,  
+          list_system TINYINT(1),
+          list_name VARCHAR(255),
+          list_alias VARCHAR(255),
+          list_map VARCHAR(255),
+          UNIQUE UniqueListName (app_id, list_name)                    
         )ENGINE=INNODB`;          
         defaultConstraints("LIST","all")
         try{
@@ -183,10 +188,13 @@ const defaultConstraints=function(tableName,qty){
 
         //###-create LIST_COLUMN table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_COLUMN"]}(
-          ${defaultColumns}  
+          ${defaultColumns}
+          table_id BIGINT,  
           column_name VARCHAR(255),
-          DataType VARCHAR(255) )ENGINE=INNODB`;      
-
+          data_type VARCHAR(255),
+          data_table_foreign BIGINT,
+          CONSTRAINT data_type CHECK (data_type IN ('text', 'textbox', 'dropdown', 'local cluster','foreign cluster'))
+          )ENGINE=INNODB`;      
         defaultConstraints("LIST_COLUMN","all")
 
         try{
@@ -196,6 +204,25 @@ const defaultConstraints=function(tableName,qty){
         catch(e){
           throw e 
         }  
+
+
+        //###-create VIEWS table:*/
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_VIEWS"]}(
+          ${defaultColumns}
+          view_name VARCHAR(255),
+          view_tables JSON,  
+          view_columns JSON, 
+          sort_by JSON,
+          allow_selection TINYINT(1)
+          )ENGINE=INNODB`;      
+        defaultConstraints("LIST_COLUMN","all")
+                try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
 
 
         //### create students table for testing
