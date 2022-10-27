@@ -1,13 +1,17 @@
 //!!! permissions shall not be evaluated for system tables
+const tm=require("../../db/dbLib/tables.map").systemTables
+
 const item={}
 const cluster={}
 const params={}
+const system={}
+
 const action={
-    CREATE  :"CREATE",
-    READ    :"READ",
+    CREATE  :   "CREATE",
+    READ    :   "READ",
     READ_LIST    :"READ_LIST",
-    UPDATE  :"UPDATE",
-    DELETE  :"DELETE"
+    UPDATE  :   "UPDATE",
+    DELETE  :   "DELETE"
 }
 const LOGGER_IDENTITY=" <DB: QB> "
 
@@ -209,6 +213,21 @@ params.queryStringOrderBy=($orderBy)=>{
 }
 
 
+system.getSystemTableColumns=(listMap)=>{
+    let q='';
+
+    console.log(listMap)
+    q=`SHOW COLUMNS FROM  ${tm[listMap]}`; 
+
+    return{
+        q:      q,
+        action: action.READ,
+        table:  listMap
+    }
+}
+
+
 
 module.exports.item=item;
 module.exports.cluster=cluster;
+module.exports.system=system;

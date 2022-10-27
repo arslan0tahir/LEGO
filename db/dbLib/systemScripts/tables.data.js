@@ -73,28 +73,51 @@ tableData=async function(){
   })
 
 
+  data["APP"]=[];
+  data["APP"].push({
+    id        : 1,
+    app_name      : "system"
+  })
 
 
-  data["LIST"]=[]
+  // process.getSystemTableColumns
+  data["LIST"]=[];
+  data["LIST_VIEWS"]=[];
+
   for (const key in systemTables){
     data["LIST"].push({
-      app_id      : 0,
+      app_id      : 1,
       list_system : 1,
       list_name   : systemTables[key],
       list_alias  : systemTables[key],    
       list_map    : key,
     })
+    
+    //??????????????????
+  //create  default view for system tables
+    res=await execute(QB.system.getSystemTableColumns(key))
+    data["LIST_VIEWS"].push({
+      view_name     : "default",
+      view_tables   : "[]", 
+      view_columns  : JSON.stringify(
+        res.map((col)=>{
+          return {
+            list_id: "",
+            column_name:"",
+            data_type:"",
+          }
+        })
+      ), 
+      sort_by       : "[]",
+      allow_selection : 1,
+    })
+    // data["LIST_COLUMN"].push()
+
   }
   
  
-  data["LIST_VIEWS"]=[];
-  data["LIST_VIEWS"].push({
-    view_name     : "dummy",
-    view_tables   : "[]", 
-    view_columns  : "[]", 
-    sort_by       : "[]",
-    allow_selection : 1,
-  })
+
+ 
 
  
 
@@ -102,6 +125,7 @@ tableData=async function(){
   await execute(QB.cluster.deleteAllRows(systemTables["GROUPS"]))
   await execute(QB.cluster.deleteAllRows(systemTables["USERS"]))
   await execute(QB.cluster.deleteAllRows(systemTables["LIST"]))
+  await execute(QB.cluster.deleteAllRows(systemTables["LIST_COLUMN"]))
   await execute(QB.cluster.deleteAllRows(systemTables["LIST_VIEWS"]))
 
 

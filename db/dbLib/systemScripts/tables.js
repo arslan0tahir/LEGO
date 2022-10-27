@@ -127,6 +127,22 @@ const defaultConstraints=function(tableName,qty){
         } 
       
 
+        /*-----------------Create App table:*/
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["APP"]}(
+          ${defaultColumns}
+          app_name VARCHAR(255),  
+          CONSTRAINT app_name UNIQUE (app_name)
+        )ENGINE=INNODB`;          
+        defaultConstraints("APP","all")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["APP"]}`)
+        }
+        catch(e){
+          throw e 
+        } 
+
+
 
         /*-----------------Create Site List Register table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST"]}(
@@ -139,6 +155,7 @@ const defaultConstraints=function(tableName,qty){
           UNIQUE UniqueListName (app_id, list_name)                    
         )ENGINE=INNODB`;          
         defaultConstraints("LIST","all")
+        constriants.push(`ALTER TABLE ${systemTables["LIST"]} ADD CONSTRAINT FOREIGN KEY (app_id) REFERENCES ${systemTables["APP"]}(id)`)
         try{
           res = await poolPromise.query(query);
           console.log(`Table created : ${systemTables["LIST"]}`)
@@ -189,13 +206,15 @@ const defaultConstraints=function(tableName,qty){
         //###-create LIST_COLUMN table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_COLUMN"]}(
           ${defaultColumns}
-          table_id BIGINT,  
+          list_id BIGINT,  
           column_name VARCHAR(255),
           data_type VARCHAR(255),
-          data_table_foreign BIGINT,
-          CONSTRAINT data_type CHECK (data_type IN ('text', 'textbox', 'dropdown', 'local cluster','foreign cluster'))
+          lookup BIGINT,
+          CONSTRAINT data_type CHECK (data_type IN ('text', 'textbox', 'dropdown', 'cluster','lookup'))
           )ENGINE=INNODB`;      
         defaultConstraints("LIST_COLUMN","all")
+        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (list_id) REFERENCES ${systemTables["LIST"]}(id)`)
+        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (lookup) REFERENCES ${systemTables["LIST"]}(id)`)
 
         try{
           res = await poolPromise.query(query);

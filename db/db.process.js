@@ -82,6 +82,17 @@ process.getUserGroups=async (userId)=>{
     return rows;
 
 } //return list of 
+
+process.getSystemTableColumns=async (tableAlias)=>{
+    let Query={};
+
+
+    Query.q=`SHOW COLUMNS FROM  ${tm["tableAlias"]}`; 
+       
+    const [rows, fields]=await execute(Query);
+    return rows;
+}
+
 process.isAdmin=async (userId)=>{
 
     const userGroups=await process.getUserGroups(userId);    
