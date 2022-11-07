@@ -122,4 +122,13 @@ process.getListByParams=async (pq)=>{
     return rows;
 }
 
+
+
+process.getItemByParams=async (tableName,columns ,condition)=>{
+
+    let q=QB.item.readByCondition(tableName,columns,condition);
+    const [row, fields]=await execute(q);
+    return row;
+}
+
 module.exports=process

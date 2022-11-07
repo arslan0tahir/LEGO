@@ -84,15 +84,17 @@ let func=async function(){
         }
     ]
 
+
+    //create items
     for(let student of students){
 
         let q=QB.item.create(testTables["STUDENTS"], student)
         try{
             res = await execute(q);
-            console.log(`Query Executed : ${q}`)
+            console.log(`Query Executed : ${q}`);
         }
         catch(e){
-            throw e 
+            throw e;
         }   
         
     }

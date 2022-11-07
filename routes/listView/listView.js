@@ -11,7 +11,7 @@ const db = require('../../db/db.js');
 const tm=require('../../db/dbLib/tables.map').systemTables
 
 
-const LOGGER_IDENTITY=" <ROUTE: SIGNIN> ";
+const LOGGER_IDENTITY=" <ROUTE: GET_VIEW> ";
 
 //### all db operation shal be performed through controller
 
@@ -29,20 +29,10 @@ router.post('/',async function (req, res, next) {
     next();
 })
 
-//### e.g. /_api/j/item/LIST_VIEWS/view_name('STUDENTS')?$expand=LIST\view_tables   
-//$exapand single item or $expandAll for array
-//### list id can be an id or array of ids, if array of ids is recieved then instead of inline query seperate query is executed 
+
 router.get('/',async function (req, res, next) {
     let expression=req.params.expression;
     let systemTable=tm[req.params.tableName];
-
-    
-    let $expansionTable="";
-    let $expansionColumn="";
-    let $expandAll=req.query.$expandAll;
-
-
-
 
 
     let key=expression.split("(")[0];
@@ -62,31 +52,11 @@ router.get('/',async function (req, res, next) {
 
     condition[key]=value;
     let row=await db.process.getItemByParams(systemTable, ["*"] , condition);    
-
     row=row[0];
-
-
-    if ($expandAll){    
-        $expandAll=req.query.$expandAll.split('\\');    
-        $expansionTable=$expandAll[0];
-        $expansionColumn=$expandAll[1];
-        
-        let expansionIdArr=JSON.parse(row[$expansionColumn])
-        let expansionResultArr=[]
-        for(value of expansionIdArr){
-            let condition={};
-
-            condition["id"]=value;
-            let expRow=await db.process.getItemByParams(tm[$expansionTable], ["*"] , condition); 
-            expansionResultArr.push(expRow[0]);
-        }
-        row[$expansionColumn]=JSON.stringify(expansionResultArr);
-    }
     
+    JSON.parse(row.view_tables)
 
-
-
-    res.send(row)
+    res.send(row[0])
 
     // res.send(`PARAMS ${req.params.tableName} ${req.params.expression}`);
     next();

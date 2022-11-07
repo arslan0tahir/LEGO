@@ -144,13 +144,14 @@ const defaultConstraints=function(tableName,qty){
 
 
 
-        /*-----------------Create Site List Register table:*/
+        /*-----------------Create List  table:*/
+        //spaces in list name are padded with underscores
+        //list_map is name to be used only for admin tables
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST"]}(
           ${defaultColumns}
           app_id BIGINT,  
           list_system TINYINT(1),
           list_name VARCHAR(255),
-          list_alias VARCHAR(255),
           list_map VARCHAR(255),
           UNIQUE UniqueListName (app_id, list_name)                    
         )ENGINE=INNODB`;          
@@ -164,8 +165,50 @@ const defaultConstraints=function(tableName,qty){
           throw e 
         } 
 
+
+        //###-create LIST_COLUMN table:*/
+        //column_name spaces are padded with underscores
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_COLUMN"]}(
+          ${defaultColumns}
+          list_id BIGINT,  
+          column_name VARCHAR(255),
+          data_type VARCHAR(255),
+          lookup BIGINT,
+          CONSTRAINT data_type CHECK (data_type IN ('text', 'textbox', 'dropdown', 'cluster','lookup','timestamp'))
+          )ENGINE=INNODB`;      
+        defaultConstraints("LIST_COLUMN","all")
+        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (list_id) REFERENCES ${systemTables["LIST"]}(id)`)
+        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (lookup) REFERENCES ${systemTables["LIST"]}(id)`)
+
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
+        }
+        catch(e){
+          throw e 
+        }          
  
 
+
+        //###-create VIEWS table:*/
+        //view_tables   array of table ids [2,10,3]
+        //view_columns  array of columns and its settings
+        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_VIEWS"]}(
+          ${defaultColumns}
+          view_name VARCHAR(255),
+          view_tables JSON,               
+          view_columns JSON, 
+          sort_by JSON,
+          allow_selection TINYINT(1)
+          )ENGINE=INNODB`;      
+        defaultConstraints("LIST_COLUMN","all")
+        try{
+          res = await poolPromise.query(query);
+          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
+        }
+        catch(e){
+          throw e 
+        }        
 
 
 
@@ -176,6 +219,8 @@ const defaultConstraints=function(tableName,qty){
           route_path VARCHAR(255),
           route_type VARCHAR(255)                       
         )ENGINE=INNODB`;  
+
+
 
        //### create Permissions table:*/
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["PERMISSIONS"]}(
@@ -203,45 +248,10 @@ const defaultConstraints=function(tableName,qty){
 
 
 
-        //###-create LIST_COLUMN table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_COLUMN"]}(
-          ${defaultColumns}
-          list_id BIGINT,  
-          column_name VARCHAR(255),
-          data_type VARCHAR(255),
-          lookup BIGINT,
-          CONSTRAINT data_type CHECK (data_type IN ('text', 'textbox', 'dropdown', 'cluster','lookup'))
-          )ENGINE=INNODB`;      
-        defaultConstraints("LIST_COLUMN","all")
-        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (list_id) REFERENCES ${systemTables["LIST"]}(id)`)
-        constriants.push(`ALTER TABLE ${systemTables["LIST_COLUMN"]} ADD CONSTRAINT FOREIGN KEY (lookup) REFERENCES ${systemTables["LIST"]}(id)`)
-
-        try{
-          res = await poolPromise.query(query);
-          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
-        }
-        catch(e){
-          throw e 
-        }  
 
 
-        //###-create VIEWS table:*/
-        query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_VIEWS"]}(
-          ${defaultColumns}
-          view_name VARCHAR(255),
-          view_tables JSON,  
-          view_columns JSON, 
-          sort_by JSON,
-          allow_selection TINYINT(1)
-          )ENGINE=INNODB`;      
-        defaultConstraints("LIST_COLUMN","all")
-                try{
-          res = await poolPromise.query(query);
-          console.log(`Table created : ${systemTables["LIST_COLUMN"]}`)
-        }
-        catch(e){
-          throw e 
-        } 
+
+ 
 
 
         //### create students table for testing

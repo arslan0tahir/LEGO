@@ -17,8 +17,7 @@ const auth_signup= require('./routes/auth/signup')
 const auth_signout= require('./routes/auth/signout')
 const auth_reinstate= require('./routes/auth/reinstate')
 
-const item= require('./routes/j/item')
-
+const j_item= require('./routes/j/item')
 const j_lists= require('./routes/j/lists')
 const cors = require('cors');
 
@@ -67,7 +66,7 @@ app.use('/_api/auth/reinstate',auth_reinstate);
 
 
 
-app.use('/_api/item/:appName/:tableName/:id',item);
+app.use('/_api/j/item/:tableName/:expression',j_item);  //e.g id(1)  or name('dummy')
 
 
 //through j path authorization is not computed 

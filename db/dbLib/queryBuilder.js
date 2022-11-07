@@ -51,6 +51,16 @@ item.readById=function(tableName,id){
 
 }
 
+
+/**
+ * Returns query object to read single item.
+ *
+ * @param {string} tableName The number of table.
+ * @param {Array} columns Array of column that you want to read.
+ * @param {Object} condition Object of condition i.e key value pairs.
+
+ * @return {Object} query object.
+ */
 item.readByCondition=function(tableName,columns,condition){
     let q='';
     let pairs='';
@@ -216,13 +226,24 @@ params.queryStringOrderBy=($orderBy)=>{
 system.getSystemTableColumns=(listMap)=>{
     let q='';
 
-    console.log(listMap)
     q=`SHOW COLUMNS FROM  ${tm[listMap]}`; 
 
     return{
         q:      q,
         action: action.READ,
         table:  listMap
+    }
+}
+
+system.getTableColumns=(listName)=>{
+    let q='';
+
+    q=`SHOW COLUMNS FROM  ${listName}`; 
+
+    return{
+        q:      q,
+        action: action.READ,
+        table:  listName
     }
 }
 
