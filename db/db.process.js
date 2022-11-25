@@ -116,6 +116,17 @@ process.updateUser=async (id,data)=>{
     }
 }
 
+
+/**
+ * This function is used to fetch cillection of items i.e. list as per condition.
+ * @param {Object} pq Object of query parameters.
+ * @param {} pq.$select Array of column names e.g. ['id','name']
+ * @param {} pq.$from Array of tables e.g. ['views','students']
+ * @param {} pq.$filter $filters is string of conditions e.g (a=1 AND b=2) OR (c=1)
+ * @param {} pq.$orderBy description
+ * @param {Number} isAdmin The number of table.
+ * @return {Object} query object.
+ */
 process.getListByParams=async (pq)=>{
     let q=QB.cluster.readListByParam(pq);
     const [rows, fields]=await execute(q);

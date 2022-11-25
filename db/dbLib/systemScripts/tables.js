@@ -13,7 +13,7 @@ const poolPromise=pool.promise();
 
 let constriants=[];
 
-
+//NOTE: uniquness in names is ensured in forntend react
 const defaultColumns=`
     id                BIGINT AUTO_INCREMENT PRIMARY KEY,
     uuid              VARCHAR(36),
@@ -151,7 +151,7 @@ const defaultConstraints=function(tableName,qty){
           ${defaultColumns}
           app_id BIGINT,  
           list_system TINYINT(1),
-          list_name VARCHAR(255),
+          list_name VARCHAR(255)  UNIQUE,
           list_map VARCHAR(255),
           UNIQUE UniqueListName (app_id, list_name)                    
         )ENGINE=INNODB`;          
@@ -195,7 +195,7 @@ const defaultConstraints=function(tableName,qty){
         //view_columns  array of columns and its settings
         query=`CREATE TABLE IF NOT EXISTS ${systemTables["LIST_VIEWS"]}(
           ${defaultColumns}
-          view_name VARCHAR(255),
+          view_name VARCHAR(255) UNIQUE,
           view_tables JSON,               
           view_columns JSON, 
           sort_by JSON,

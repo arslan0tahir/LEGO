@@ -74,6 +74,7 @@ tableData=async function(){
   })
 
 
+
   data["APP"]=[];
   data["APP"].push({
     id        : 1,
@@ -85,9 +86,12 @@ tableData=async function(){
   })
 
 
+
+
   // process.getSystemTableColumns
   data["LIST"]=[];
   data["LIST_VIEWS"]=[];  
+  data["LIST_COLUMN"]=[];
   let tableId=1;
   for (const key in systemTables){
 
@@ -138,7 +142,7 @@ tableData=async function(){
     tableId++;
   }
 
-
+  //create view for test table
   for (const key in testTables){
     data["LIST"].push({
       id          : tableId,
@@ -149,11 +153,37 @@ tableData=async function(){
     })
 
     //??????????????????
-  //create  default view for system tables
+    
     res=await execute(QB.system.getTableColumns(key))
     res=res[0];
-    console.log(res);
+    
+    //create columns for test tables
+    data["LIST_COLUMN"]=res.map((col)=>{
+      return {
+        list_id: tableId,
+        column_name:  col.Field,
+        data_type:(function(type){
+          if (type.includes('int')){
+            return 'text'
+          }
+          else if (type.includes('char')){
+            return 'text'
+          }
+          else if (type.includes('longtext')){
+            return 'cluster'
+          }
+          else if (type.includes('timestamp')){
+            return 'timestamp'
+          }
 
+          // 'text', 'textbox', 'dropdown', 'cluster','lookup'
+        })(col.Type),
+
+      }      
+     
+    })
+
+    //create  default view for test tables
     data["LIST_VIEWS"].push({
       view_name     : key,
       view_tables   : `[${tableId}]`, 

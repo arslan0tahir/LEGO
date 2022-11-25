@@ -16,6 +16,7 @@ const auth_signin= require('./routes/auth/signin')
 const auth_signup= require('./routes/auth/signup')
 const auth_signout= require('./routes/auth/signout')
 const auth_reinstate= require('./routes/auth/reinstate')
+const view_list= require('./routes/views/list')
 
 const j_item= require('./routes/j/item')
 const j_lists= require('./routes/j/lists')
@@ -65,6 +66,7 @@ app.use('/_api/auth/signout',auth_signout);
 app.use('/_api/auth/reinstate',auth_reinstate);
 
 
+app.use('/_api/views/list/:viewName',view_list);  //e.g id(1)  or name('dummy')
 
 app.use('/_api/j/item/:tableName/:expression',j_item);  //e.g id(1)  or name('dummy')
 

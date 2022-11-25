@@ -34,7 +34,7 @@ router.get('/',async function (req, res, next) {
     let pq={};
     pq.$select=JSON.parse(req.query.$select);
     pq.$from=JSON.parse(req.query.$from);
-    pq.$filter=JSON.parse(req.query.$filter);
+    pq.$filter=JSON.parse(req.query.$filter);//filter is a double string
     pq.$orderBy=JSON.parse(req.query.$orderBy);
     pq.$limit=JSON.parse(req.query.$limit);
 

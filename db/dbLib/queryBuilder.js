@@ -79,11 +79,8 @@ item.readByCondition=function(tableName,columns,condition){
         action: action.READ,
         table:tableName
     }
-    // return q;
-//     SELECT * FROM Customers
-// WHERE Country='Germany'
-// LIMIT 3;
 }
+
 
 item.updateById=function(tableName,rowId,data){
     let q='';
@@ -154,7 +151,7 @@ cluster.deleteById=function(tableName,ids){//array of ids
     // DELETE from tablename WHERE id IN (1,2,3,...,254);
 }
 
-cluster.deleteAllRows=function(tableName){//array of ids
+cluster.deleteAllRows=function(tableName){
     let q=`DELETE FROM ${tableName} `;
 
     return{
@@ -167,7 +164,17 @@ cluster.deleteAllRows=function(tableName){//array of ids
     // DELETE from tablename WHERE id IN (1,2,3,...,254);
 }
 
-
+/**
+ * Returns query object to read single item.
+ *
+ * @param {Object} pq Object of query parameters.
+ * @param {} pq.$select Array of column names e.g. ['id','name']
+ * @param {} pq.$from Array of tables e.g. ['views','students']
+ * @param {} pq.$filter $filters is string of conditions e.g (a=1 AND b=2) OR (c=1)
+ * @param {} pq.$orderBy description
+ * @param {Number} isAdmin The number of table.
+ * @return {Object} query object.
+ */
 cluster.readListByParam=function(pq,isAdmin=0){
 
     
